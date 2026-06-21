@@ -41,7 +41,7 @@
         {{-- Legenda --}}
         <div class="flex flex-wrap gap-4 text-xs text-gray-500 mb-2">
             <span class="flex items-center gap-1">
-                <span class="inline-block w-4 h-3 rounded" style="background:#22c55e;opacity:0.6;border:1px solid #16a34a"></span>
+                <span class="inline-block w-4 h-3 rounded" style="background:#f97316;opacity:0.6;border:1px solid #ea580c"></span>
                 Lahan ini (sedang digambar)
             </span>
             <span class="flex items-center gap-1">
@@ -120,7 +120,7 @@
                                 showArea: true,
                                 title: 'Gambar batas area lahan',
                                 shapeOptions: {
-                                    color: '#16a34a', fillColor: '#22c55e', fillOpacity: 0.35
+                                    color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35
                                 },
                             },
                         }
@@ -131,9 +131,9 @@
                     if (this.existingData) {
                         try {
                             L.geoJSON(this.existingData, {
-                                style: { color: '#16a34a', fillColor: '#22c55e', fillOpacity: 0.35, weight: 2 },
+                                style: { color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35, weight: 2 },
                                 pointToLayer: (f, latlng) => L.circleMarker(latlng, {
-                                    radius: 9, color: '#16a34a', fillColor: '#22c55e',
+                                    radius: 9, color: '#ea580c', fillColor: '#f97316',
                                     fillOpacity: 0.7, weight: 2
                                 })
                             }).eachLayer(layer => {
