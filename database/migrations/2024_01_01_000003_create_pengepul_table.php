@@ -19,12 +19,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        try {
-            DB::statement('ALTER TABLE pengepul ADD COLUMN lokasi_gudang geometry(Point, 4326)');
-            DB::statement('CREATE INDEX pengepul_lokasi_gist ON pengepul USING GIST (lokasi_gudang)');
-        } catch (\Exception $e) {
-            // PostGIS tidak tersedia — kolom geometry dilewati
-        }
     }
 
     public function down(): void

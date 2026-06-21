@@ -20,12 +20,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        try {
-            DB::statement('ALTER TABLE rute_distribusi ADD COLUMN jalur geometry(LineString, 4326)');
-            DB::statement('CREATE INDEX rute_jalur_gist ON rute_distribusi USING GIST (jalur)');
-        } catch (\Exception $e) {
-            // PostGIS tidak tersedia — kolom geometry dilewati
-        }
     }
 
     public function down(): void
