@@ -223,7 +223,7 @@
                 allPoints.push([lat, lng]);
             } else if (geom.type === 'Polygon') {
                 const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
-                const p = L.polygon(coords, { color: '#10b981', fillColor: '#10b981', fillOpacity: 0.25, weight: 2 }).bindPopup(popup);
+                const p = L.polygon(coords, { color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35, weight: 2 }).bindPopup(popup);
                 layers.lahan.addLayer(p);
                 coords.forEach(c => allPoints.push(c));
             }

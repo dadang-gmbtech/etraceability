@@ -180,7 +180,7 @@
                     bounds.push([lat, lng]);
                 } else if (geom.type === 'Polygon') {
                     const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
-                    L.polygon(coords, { color: '#10b981', fillOpacity: 0.3, weight: 2 })
+                    L.polygon(coords, { color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35, weight: 2 })
                         .addTo(map).bindPopup(popup);
                     coords.forEach(c => bounds.push(c));
                 }
