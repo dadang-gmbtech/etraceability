@@ -12,11 +12,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('CREATE EXTENSION IF NOT EXISTS postgis');
+        try {
+            DB::statement('CREATE EXTENSION IF NOT EXISTS postgis');
+        } catch (\Exception $e) {
+            // PostGIS tidak terinstall di server ini — aplikasi menggunakan JSON untuk koordinat
+        }
     }
 
     public function down(): void
     {
-        DB::statement('DROP EXTENSION IF EXISTS postgis');
+        try {
+            DB::statement('DROP EXTENSION IF EXISTS postgis');
+        } catch (\Exception $e) {
+            //
+        }
     }
 };
