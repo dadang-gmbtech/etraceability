@@ -55,17 +55,39 @@ class DeviceResource extends Resource
                             ->searchable()
                             ->preload()
                             ->nullable()
-                            ->placeholder('— Pilih Lahan —'),
+                            ->live()
+                            ->placeholder('— Pilih Lahan —')
+                            ->afterStateUpdated(function ($state, $set) {
+                                if (!$state) return;
+                                $lahan = \App\Models\Lahan::find($state);
+                                if (!$lahan || !$lahan->koordinat) return;
+                                $geom = is_array($lahan->koordinat)
+                                    ? $lahan->koordinat
+                                    : json_decode($lahan->koordinat, true);
+                                [$lat, $lng] = static::hitungCentroid($geom);
+                                if ($lat !== null) {
+                                    $set('latitude',  round($lat, 7));
+                                    $set('longitude', round($lng, 7));
+                                }
+                            }),
 
                         TextInput::make('latitude')
                             ->label('Latitude')
                             ->numeric()
-                            ->nullable(),
+                            ->nullable()
+                            ->readOnly(fn ($get) => (bool) $get('lahan_id'))
+                            ->helperText(fn ($get) => $get('lahan_id')
+                                ? '📍 Diisi otomatis dari titik tengah lahan'
+                                : 'Isi manual jika perangkat berada di luar lahan'),
 
                         TextInput::make('longitude')
                             ->label('Longitude')
                             ->numeric()
-                            ->nullable(),
+                            ->nullable()
+                            ->readOnly(fn ($get) => (bool) $get('lahan_id'))
+                            ->helperText(fn ($get) => $get('lahan_id')
+                                ? '📍 Diisi otomatis dari titik tengah lahan'
+                                : 'Isi manual jika perangkat berada di luar lahan'),
 
                         Toggle::make('status')
                             ->label('Status Aktif')
@@ -75,7 +97,47 @@ class DeviceResource extends Resource
                             ->dehydrateStateUsing(fn ($state) => $state ? 'active' : 'inactive'),
                     ]),
                 ]),
+
+            Section::make('Token API Perangkat')
+                ->description('Token ini digunakan perangkat IoT untuk mengirim data sensor ke server. Simpan dan jaga kerahasiaannya.')
+                ->collapsed()
+                ->schema([
+                    TextInput::make('api_token')
+                        ->label('Token API')
+                        ->readOnly()
+                        ->helperText('Gunakan token ini di header HTTP: X-Device-Token: {token}')
+                        ->suffixAction(
+                            \Filament\Actions\Action::make('salin_token')
+                                ->icon(Heroicon::OutlinedClipboard)
+                                ->label('Salin')
+                                ->action(fn () => null)
+                                ->extraAttributes(['x-on:click' => 'window.navigator.clipboard.writeText($el.closest(\'.fi-input-wrp\').querySelector(\'input\').value); $tooltip(\'Token disalin!\', { timeout: 1500 })']),
+                        ),
+                ]),
         ]);
+    }
+
+    private static function hitungCentroid(?array $geom): array
+    {
+        if (!$geom || !isset($geom['type'])) return [null, null];
+
+        if ($geom['type'] === 'Point') {
+            return [$geom['coordinates'][1], $geom['coordinates'][0]];
+        }
+
+        if ($geom['type'] === 'Polygon' && !empty($geom['coordinates'][0])) {
+            $ring = $geom['coordinates'][0];
+            // Hapus titik penutup jika sama dengan titik pertama
+            if (count($ring) > 1 && $ring[0] === end($ring)) {
+                array_pop($ring);
+            }
+            $lats = array_column($ring, 1);
+            $lngs = array_column($ring, 0);
+            $n    = count($ring);
+            return [array_sum($lats) / $n, array_sum($lngs) / $n];
+        }
+
+        return [null, null];
     }
 
     public static function table(Table $table): Table
