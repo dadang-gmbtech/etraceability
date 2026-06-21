@@ -24,10 +24,12 @@ return new class extends Migration
 
         // Kolom geometry untuk lokasi kebun (point) ditambah lewat raw SQL
         // karena PostGIS belum punya native column type di Laravel schema builder.
-        DB::statement('ALTER TABLE petani ADD COLUMN lokasi_kebun geometry(Point, 4326)');
-
-        // Index spasial GIST agar query radius/bounding box cepat
-        DB::statement('CREATE INDEX petani_lokasi_kebun_gist ON petani USING GIST (lokasi_kebun)');
+        try {
+            DB::statement('ALTER TABLE petani ADD COLUMN lokasi_kebun geometry(Point, 4326)');
+            DB::statement('CREATE INDEX petani_lokasi_kebun_gist ON petani USING GIST (lokasi_kebun)');
+        } catch (\Exception $e) {
+            // PostGIS tidak tersedia — kolom geometry dilewati
+        }
     }
 
     public function down(): void

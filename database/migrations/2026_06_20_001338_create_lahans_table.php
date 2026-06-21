@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('petani_id')->constrained('petani')->onDelete('cascade');
             $table->string('nama_lahan');
             $table->integer('jumlah_pohon')->default(0);
-            $table->geometry('geom')->nullable(); // PostGIS GEOMETRY bisa Point atau Polygon
+            // kolom geom (PostGIS) dihapus — koordinat disimpan sebagai JSON
             $table->timestamps();
         });
     }
