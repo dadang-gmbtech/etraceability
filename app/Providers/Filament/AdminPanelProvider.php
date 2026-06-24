@@ -30,6 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->passwordsRevealable()
             ->colors([
                 'primary' => Color::Amber,
             ])
