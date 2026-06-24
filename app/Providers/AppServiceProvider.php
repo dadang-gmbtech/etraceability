@@ -22,6 +22,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Livewire\Livewire::listen('exception', function (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('[Livewire] ' . $e->getMessage(), [
+                'file' => $e->getFile() . ':' . $e->getLine(),
+                'trace' => collect(explode("\n", $e->getTraceAsString()))->take(10)->implode("\n"),
+            ]);
+        });
     }
 }

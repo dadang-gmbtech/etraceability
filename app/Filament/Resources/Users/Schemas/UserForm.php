@@ -12,64 +12,67 @@ class UserForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('name')
-                    ->label('Nama')
-                    ->required(),
+        $operation = $schema->getOperation();
 
-                TextInput::make('email')
-                    ->label('Email')
-                    ->email()
-                    ->required()
-                    ->unique(ignoreRecord: true),
+        $components = [
+            TextInput::make('name')
+                ->label('Nama')
+                ->required(),
 
-                TextInput::make('password')
-                    ->label('Password')
-                    ->password()
-                    ->revealable()
-                    ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
-                    ->dehydrated(fn ($state) => filled($state))
-                    ->required(fn (string $operation) => $operation === 'create')
-                    ->helperText('Kosongkan jika tidak ingin mengubah password'),
+            TextInput::make('email')
+                ->label('Email')
+                ->email()
+                ->required()
+                ->unique(ignoreRecord: true),
 
-                Select::make('status')
-                    ->label('Status Akun')
-                    ->options([
-                        'approved' => 'Disetujui',
-                        'pending'  => 'Menunggu Persetujuan',
-                        'rejected' => 'Ditolak',
-                    ])
-                    ->default('approved')
-                    ->required(),
+            TextInput::make('password')
+                ->label('Password')
+                ->password()
+                ->revealable()
+                ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
+                ->dehydrated(fn ($state) => filled($state))
+                ->required(fn (string $operation) => $operation === 'create')
+                ->helperText('Kosongkan jika tidak ingin mengubah password'),
 
-                Select::make('role')
-                    ->label('Role')
-                    ->options([
-                        'admin'    => 'Admin',
-                        'petani'   => 'Petani',
-                        'pengepul' => 'Pengepul',
-                        'kub'      => 'KUB',
-                    ])
-                    ->default('admin')
-                    ->required()
-                    ->live(),
+            Select::make('status')
+                ->label('Status Akun')
+                ->options([
+                    'approved' => 'Disetujui',
+                    'pending'  => 'Menunggu Persetujuan',
+                    'rejected' => 'Ditolak',
+                ])
+                ->default('approved')
+                ->required(),
 
-                Select::make('petani_id')
-                    ->label('Link ke Data Petani')
-                    ->options(Petani::orderBy('nama')->pluck('nama', 'id'))
-                    ->searchable()
-                    ->nullable()
-                    ->visible(fn ($get) => $get('role') === 'petani')
-                    ->helperText('Pilih petani yang terhubung dengan akun ini'),
+            Select::make('role')
+                ->label('Role')
+                ->options([
+                    'admin'    => 'Admin',
+                    'petani'   => 'Petani',
+                    'pengepul' => 'Pengepul',
+                    'kub'      => 'KUB',
+                ])
+                ->default('petani')
+                ->required(),
+        ];
 
-                Select::make('pengepul_id')
-                    ->label('Link ke Data Pengepul')
-                    ->options(Pengepul::orderBy('nama_koperasi')->pluck('nama_koperasi', 'id'))
-                    ->searchable()
-                    ->nullable()
-                    ->visible(fn ($get) => $get('role') === 'pengepul')
-                    ->helperText('Pilih pengepul yang terhubung dengan akun ini'),
-            ]);
+        // Petani/Pengepul link hanya di form Edit
+        if ($operation === 'edit') {
+            $components[] = Select::make('petani_id')
+                ->label('Link ke Data Petani (opsional)')
+                ->options(Petani::orderBy('nama')->pluck('nama', 'id'))
+                ->searchable()
+                ->placeholder('— Tidak ditautkan —')
+                ->helperText('Isi jika role Petani');
+
+            $components[] = Select::make('pengepul_id')
+                ->label('Link ke Data Pengepul (opsional)')
+                ->options(Pengepul::orderBy('nama_koperasi')->pluck('nama_koperasi', 'id'))
+                ->searchable()
+                ->placeholder('— Tidak ditautkan —')
+                ->helperText('Isi jika role Pengepul');
+        }
+
+        return $schema->components($components);
     }
 }
