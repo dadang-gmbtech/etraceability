@@ -33,6 +33,16 @@ class UserForm
                     ->required(fn (string $operation) => $operation === 'create')
                     ->helperText('Kosongkan jika tidak ingin mengubah password'),
 
+                Select::make('status')
+                    ->label('Status Akun')
+                    ->options([
+                        'approved' => 'Disetujui',
+                        'pending'  => 'Menunggu Persetujuan',
+                        'rejected' => 'Ditolak',
+                    ])
+                    ->default('approved')
+                    ->required(),
+
                 Select::make('role')
                     ->label('Role')
                     ->options([

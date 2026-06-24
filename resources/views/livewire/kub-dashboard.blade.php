@@ -5,7 +5,7 @@
                 <h1 class="text-xl font-bold">e-Traceability Gula Kelapa</h1>
                 <p class="text-green-100 text-sm">Dashboard KUB — Kelompok Usaha Bersama</p>
             </div>
-            <form method="POST" action="{{ route('filament.admin.auth.logout') }}">
+            <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="bg-green-800 hover:bg-green-900 text-white px-4 py-2 rounded-lg text-sm font-medium">
                     Logout

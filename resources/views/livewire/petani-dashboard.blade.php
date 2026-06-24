@@ -6,7 +6,7 @@
                 <h1 class="text-xl font-bold">e-Traceability Gula Kelapa</h1>
                 <p class="text-amber-100 text-sm">Dashboard Petani — {{ auth()->user()->petani?->nama }}</p>
             </div>
-            <form method="POST" action="{{ route('filament.admin.auth.logout') }}">
+            <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
                     Logout
