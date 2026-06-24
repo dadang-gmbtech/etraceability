@@ -7,6 +7,9 @@ use App\Livewire\BatchTraceabilityView;
 use App\Livewire\TracePublic;
 use App\Livewire\PetaSebaran;
 use App\Livewire\RuteDistribusiManager;
+use App\Livewire\PetaniDashboard;
+use App\Livewire\PengepulDashboard;
+use App\Livewire\KubDashboard;
 use App\Http\Controllers\Auth\GoogleController;
 
 /*
@@ -44,6 +47,13 @@ Route::group([], function () {
     Route::get('/batch-produksi', BatchProduksiManager::class)->name('batch.index');
     Route::get('/peta-sebaran', PetaSebaran::class)->name('peta.sebaran');
     Route::get('/rute-distribusi', RuteDistribusiManager::class)->name('rute.index');
+});
+
+// --- Dashboard per role ---
+Route::middleware(['auth'])->group(function () {
+    Route::get('/petani/dashboard', PetaniDashboard::class)->name('petani.dashboard');
+    Route::get('/pengepul/dashboard', PengepulDashboard::class)->name('pengepul.dashboard');
+    Route::get('/kub/dashboard', KubDashboard::class)->name('kub.dashboard');
 });
 
 Route::get('/', function () {

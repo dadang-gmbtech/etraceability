@@ -13,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'email', 'password', 'google_id', 'google_token', 'google_refresh_token', 'api_token'])]
+#[Fillable(['name', 'email', 'password', 'google_id', 'google_token', 'google_refresh_token', 'api_token', 'role', 'petani_id', 'pengepul_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -22,8 +22,23 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return $this->role === 'admin';
     }
+
+    public function petani(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Petani::class);
+    }
+
+    public function pengepul(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Pengepul::class);
+    }
+
+    public function isAdmin(): bool    { return $this->role === 'admin'; }
+    public function isPetani(): bool   { return $this->role === 'petani'; }
+    public function isPengepul(): bool { return $this->role === 'pengepul'; }
+    public function isKub(): bool      { return $this->role === 'kub'; }
 
     protected static function booted(): void
     {
