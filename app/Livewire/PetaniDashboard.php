@@ -26,23 +26,27 @@ class PetaniDashboard extends Component
     {
         if ($this->belumDikonfigurasi) {
             return view('livewire.petani-dashboard', [
-                'totalKg' => 0, 'totalUang' => 0,
-                'rekapBulanan' => collect(), 'setoranTerakhir' => collect(),
+                'totalKg'         => 0,
+                'totalUang'       => 0,
+                'jumlahSetoran'   => 0,
+                'rekapBulanan'    => collect(),
+                'setoranTerakhir' => collect(),
                 'belumDikonfigurasi' => true,
             ])->layout('components.layouts.app');
         }
 
         $petaniId = auth()->user()->petani_id;
 
-        $totalKg = SetoranGula::where('petani_id', $petaniId)->sum('berat_kg');
-        $totalUang = SetoranGula::where('petani_id', $petaniId)->sum('total_harga');
+        $totalKg     = SetoranGula::where('petani_id', $petaniId)->sum('berat_kg');
+        $totalUang   = SetoranGula::where('petani_id', $petaniId)->sum('total_harga');
+        $jumlahSetoran = SetoranGula::where('petani_id', $petaniId)->count();
 
         $rekapBulanan = SetoranGula::where('petani_id', $petaniId)
             ->select(
                 DB::raw("TO_CHAR(tanggal_setor, 'YYYY-MM') as bulan"),
+                DB::raw("COUNT(*) as jumlah_setor"),
                 DB::raw("SUM(berat_kg) as total_kg"),
-                DB::raw("SUM(total_harga) as total_uang"),
-                DB::raw("COUNT(*) as jumlah_setor")
+                DB::raw("SUM(total_harga) as total_uang")
             )
             ->groupBy('bulan')
             ->orderByDesc('bulan')
@@ -56,7 +60,7 @@ class PetaniDashboard extends Component
             ->get();
 
         return view('livewire.petani-dashboard', compact(
-            'totalKg', 'totalUang', 'rekapBulanan', 'setoranTerakhir'
+            'totalKg', 'totalUang', 'jumlahSetoran', 'rekapBulanan', 'setoranTerakhir'
         ))->layout('components.layouts.app');
     }
 }

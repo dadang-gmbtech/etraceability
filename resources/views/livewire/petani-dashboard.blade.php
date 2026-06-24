@@ -4,7 +4,7 @@
         <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-bold">e-Traceability Gula Kelapa</h1>
-                <p class="text-amber-100 text-sm">Dashboard Petani — {{ auth()->user()->petani?->nama }}</p>
+                <p class="text-amber-100 text-sm">Dashboard Petani — {{ auth()->user()->petani?->nama ?? auth()->user()->name }}</p>
             </div>
             <a href="{{ route('auth.logout') }}"
                class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-sm font-medium"
@@ -15,32 +15,41 @@
     </header>
 
     <div class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+
         @if($belumDikonfigurasi ?? false)
         <div class="bg-yellow-50 border border-yellow-300 rounded-xl p-5 text-yellow-800">
             <p class="font-semibold">Akun Anda belum dikonfigurasi</p>
             <p class="text-sm mt-1">Admin belum menautkan akun Anda ke data petani. Hubungi admin untuk melakukan konfigurasi.</p>
         </div>
-        @endif
+        @else
 
         {{-- Statistik ringkas --}}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="bg-white rounded-xl shadow p-5 border-l-4 border-amber-500">
                 <p class="text-sm text-gray-500">Total Setoran</p>
-                <p class="text-3xl font-bold text-gray-800">{{ number_format($totalKg, 1) }} <span class="text-base font-normal text-gray-500">kg</span></p>
+                <p class="text-3xl font-bold text-gray-800">
+                    {{ number_format($totalKg, 1) }}
+                    <span class="text-base font-normal text-gray-500">kg</span>
+                </p>
             </div>
             <div class="bg-white rounded-xl shadow p-5 border-l-4 border-green-500">
-                <p class="text-sm text-gray-500">Total Pendapatan</p>
-                <p class="text-3xl font-bold text-gray-800">Rp {{ number_format($totalUang, 0, ',', '.') }}</p>
+                <p class="text-sm text-gray-500">Total Hasil Penjualan</p>
+                <p class="text-3xl font-bold text-gray-800">
+                    Rp {{ number_format($totalUang, 0, ',', '.') }}
+                </p>
             </div>
             <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
                 <p class="text-sm text-gray-500">Jumlah Setoran</p>
-                <p class="text-3xl font-bold text-gray-800">{{ $setoranTerakhir->count() }} <span class="text-base font-normal text-gray-500">transaksi (10 terakhir)</span></p>
+                <p class="text-3xl font-bold text-gray-800">
+                    {{ $jumlahSetoran }}
+                    <span class="text-base font-normal text-gray-500">transaksi</span>
+                </p>
             </div>
         </div>
 
         {{-- Rekap Bulanan --}}
         <div class="bg-white rounded-xl shadow p-5">
-            <h2 class="text-lg font-semibold text-gray-700 mb-4">Rekap Bulanan</h2>
+            <h2 class="text-lg font-semibold text-gray-700 mb-4">Rekap Setoran & Penjualan Bulanan</h2>
             @if($rekapBulanan->isEmpty())
                 <p class="text-gray-400 text-sm">Belum ada data setoran.</p>
             @else
@@ -50,17 +59,21 @@
                             <tr>
                                 <th class="px-4 py-2">Bulan</th>
                                 <th class="px-4 py-2 text-right">Jumlah Setor</th>
-                                <th class="px-4 py-2 text-right">Total (kg)</th>
-                                <th class="px-4 py-2 text-right">Pendapatan</th>
+                                <th class="px-4 py-2 text-right">Total Setoran (kg)</th>
+                                <th class="px-4 py-2 text-right">Hasil Penjualan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
                             @foreach($rekapBulanan as $rekap)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-2 font-medium">{{ \Carbon\Carbon::parse($rekap->bulan . '-01')->translatedFormat('F Y') }}</td>
+                                <td class="px-4 py-2 font-medium">
+                                    {{ \Carbon\Carbon::parse($rekap->bulan . '-01')->translatedFormat('F Y') }}
+                                </td>
                                 <td class="px-4 py-2 text-right">{{ $rekap->jumlah_setor }}x</td>
                                 <td class="px-4 py-2 text-right font-medium">{{ number_format($rekap->total_kg, 1) }} kg</td>
-                                <td class="px-4 py-2 text-right text-green-600 font-medium">Rp {{ number_format($rekap->total_uang, 0, ',', '.') }}</td>
+                                <td class="px-4 py-2 text-right text-green-600 font-medium">
+                                    Rp {{ number_format($rekap->total_uang, 0, ',', '.') }}
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -81,8 +94,8 @@
                             <tr>
                                 <th class="px-4 py-2">Tanggal</th>
                                 <th class="px-4 py-2">No. Batch</th>
-                                <th class="px-4 py-2 text-right">Berat (kg)</th>
-                                <th class="px-4 py-2 text-right">Pendapatan</th>
+                                <th class="px-4 py-2 text-right">Setoran (kg)</th>
+                                <th class="px-4 py-2 text-right">Hasil Penjualan</th>
                                 <th class="px-4 py-2 text-center">Status</th>
                             </tr>
                         </thead>
@@ -90,9 +103,13 @@
                             @foreach($setoranTerakhir as $setor)
                             <tr class="hover:bg-gray-50 {{ $setor->is_anomali ? 'bg-red-50' : '' }}">
                                 <td class="px-4 py-2">{{ $setor->tanggal_setor->format('d/m/Y') }}</td>
-                                <td class="px-4 py-2 text-xs font-mono text-gray-500">{{ $setor->batchProduksi?->trace_id ?? '-' }}</td>
-                                <td class="px-4 py-2 text-right font-medium">{{ number_format($setor->berat_kg, 1) }}</td>
-                                <td class="px-4 py-2 text-right text-green-600">Rp {{ number_format($setor->total_harga, 0, ',', '.') }}</td>
+                                <td class="px-4 py-2 text-xs font-mono text-gray-500">
+                                    {{ $setor->batchProduksi?->trace_id ?? '-' }}
+                                </td>
+                                <td class="px-4 py-2 text-right font-medium">{{ number_format($setor->berat_kg, 1) }} kg</td>
+                                <td class="px-4 py-2 text-right text-green-600">
+                                    Rp {{ number_format($setor->total_harga, 0, ',', '.') }}
+                                </td>
                                 <td class="px-4 py-2 text-center">
                                     @if($setor->is_anomali)
                                         <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs">Anomali</span>
@@ -107,5 +124,7 @@
                 </div>
             @endif
         </div>
+
+        @endif {{-- end belumDikonfigurasi --}}
     </div>
 </div>
