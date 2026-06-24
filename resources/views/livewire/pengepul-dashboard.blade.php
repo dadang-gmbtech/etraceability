@@ -5,12 +5,11 @@
                 <h1 class="text-xl font-bold">e-Traceability Gula Kelapa</h1>
                 <p class="text-blue-100 text-sm">Dashboard Pengepul — {{ auth()->user()->pengepul?->nama_koperasi }}</p>
             </div>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                    Logout
-                </button>
-            </form>
+            <a href="{{ route('auth.logout') }}"
+               class="bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-medium"
+               onclick="return confirm('Yakin ingin logout?')">
+                Logout
+            </a>
         </div>
     </header>
 

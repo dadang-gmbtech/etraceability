@@ -56,6 +56,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/kub/dashboard', KubDashboard::class)->name('kub.dashboard');
 });
 
+// --- Logout via GET untuk dashboard non-admin ---
+Route::get('/auth/logout', function (\Illuminate\Http\Request $request) {
+    \Illuminate\Support\Facades\Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect()->route('filament.admin.auth.login');
+})->middleware('auth')->name('auth.logout');
+
 Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('peta.sebaran');
