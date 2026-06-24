@@ -9,16 +9,30 @@ use Livewire\Component;
 
 class PengepulDashboard extends Component
 {
+    public bool $belumDikonfigurasi = false;
+
     public function mount(): void
     {
         $user = auth()->user();
-        if (!$user || !$user->isPengepul() || !$user->pengepul_id) {
-            abort(403);
+        if (!$user || !$user->isPengepul()) {
+            redirect()->route('filament.admin.auth.login');
+            return;
+        }
+        if (!$user->pengepul_id) {
+            $this->belumDikonfigurasi = true;
         }
     }
 
     public function render()
     {
+        if ($this->belumDikonfigurasi) {
+            return view('livewire.pengepul-dashboard', [
+                'totalKg' => 0, 'totalUang' => 0, 'jumlahPetani' => 0,
+                'rekapPerPetani' => collect(), 'rekapBulanan' => collect(),
+                'belumDikonfigurasi' => true,
+            ])->layout('components.layouts.app');
+        }
+
         $pengepulId = auth()->user()->pengepul_id;
 
         $totalKg = SetoranGula::where('pengepul_id', $pengepulId)->sum('berat_kg');

@@ -13,7 +13,8 @@ class KubDashboard extends Component
     {
         $user = auth()->user();
         if (!$user || !$user->isKub()) {
-            abort(403);
+            redirect()->route('filament.admin.auth.login');
+            return;
         }
     }
 

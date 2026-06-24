@@ -14,6 +14,13 @@
     </header>
 
     <div class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+        @if($belumDikonfigurasi ?? false)
+        <div class="bg-yellow-50 border border-yellow-300 rounded-xl p-5 text-yellow-800">
+            <p class="font-semibold">Akun Anda belum dikonfigurasi</p>
+            <p class="text-sm mt-1">Admin belum menautkan akun Anda ke data pengepul. Hubungi admin untuk melakukan konfigurasi.</p>
+        </div>
+        @endif
+
         {{-- Statistik --}}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="bg-white rounded-xl shadow p-5 border-l-4 border-amber-500">
