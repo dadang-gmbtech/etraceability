@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Lahan;
 use App\Models\SetoranGula;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -26,6 +27,8 @@ class PetaniDashboard extends Component
     {
         if ($this->belumDikonfigurasi) {
             return view('livewire.petani-dashboard', [
+                'petani'          => null,
+                'lahans'          => collect(),
                 'totalKg'         => 0,
                 'totalUang'       => 0,
                 'jumlahSetoran'   => 0,
@@ -35,12 +38,21 @@ class PetaniDashboard extends Component
             ])->layout('components.layouts.app');
         }
 
-        $petaniId = auth()->user()->petani_id;
+        $user     = auth()->user();
+        $petani   = $user->petani;
+        $petaniId = $user->petani_id;
 
-        $totalKg     = SetoranGula::where('petani_id', $petaniId)->sum('berat_kg');
-        $totalUang   = SetoranGula::where('petani_id', $petaniId)->sum('total_harga');
+        // Lahan yang dikelola petani ini
+        $lahans = Lahan::where('petani_id', $petaniId)
+            ->orderBy('nama_lahan')
+            ->get();
+
+        // Statistik setoran
+        $totalKg       = SetoranGula::where('petani_id', $petaniId)->sum('berat_kg');
+        $totalUang     = SetoranGula::where('petani_id', $petaniId)->sum('total_harga');
         $jumlahSetoran = SetoranGula::where('petani_id', $petaniId)->count();
 
+        // Rekap per bulan (12 bulan terakhir)
         $rekapBulanan = SetoranGula::where('petani_id', $petaniId)
             ->select(
                 DB::raw("TO_CHAR(tanggal_setor, 'YYYY-MM') as bulan"),
@@ -53,6 +65,7 @@ class PetaniDashboard extends Component
             ->limit(12)
             ->get();
 
+        // 10 setoran terakhir
         $setoranTerakhir = SetoranGula::where('petani_id', $petaniId)
             ->with('batchProduksi')
             ->orderByDesc('tanggal_setor')
@@ -60,7 +73,9 @@ class PetaniDashboard extends Component
             ->get();
 
         return view('livewire.petani-dashboard', compact(
-            'totalKg', 'totalUang', 'jumlahSetoran', 'rekapBulanan', 'setoranTerakhir'
+            'petani', 'lahans',
+            'totalKg', 'totalUang', 'jumlahSetoran',
+            'rekapBulanan', 'setoranTerakhir'
         ))->layout('components.layouts.app');
     }
 }
