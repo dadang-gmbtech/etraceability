@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 
 class GoogleController extends Controller
 {
@@ -20,7 +22,20 @@ class GoogleController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->user();
+        } catch (InvalidStateException $e) {
+            Log::warning('Google OAuth InvalidStateException: ' . $e->getMessage());
+            return redirect()->route('filament.admin.auth.login')
+                ->with('google_error', 'Sesi login Google habis. Silakan coba lagi.');
+        } catch (\Exception $e) {
+            Log::error('Google OAuth gagal saat mendapatkan user: ' . $e->getMessage(), [
+                'class' => get_class($e),
+                'file'  => $e->getFile() . ':' . $e->getLine(),
+            ]);
+            return redirect()->route('filament.admin.auth.login')
+                ->with('google_error', 'Login Google gagal. Silakan coba lagi.');
+        }
 
+        try {
             $user = User::where('google_id', $googleUser->id)
                         ->orWhere('email', $googleUser->email)
                         ->first();
@@ -32,7 +47,6 @@ class GoogleController extends Controller
                     'google_refresh_token' => $googleUser->refreshToken,
                 ]);
             } else {
-                // User baru via Google → pending, tunggu admin set role & approve
                 $user = User::create([
                     'name'                 => $googleUser->name,
                     'email'                => $googleUser->email,
@@ -45,7 +59,6 @@ class GoogleController extends Controller
                 ]);
             }
 
-            // Cek status akun
             if (($user->status ?? 'approved') === 'pending') {
                 return redirect()->route('filament.admin.auth.login')
                     ->with('google_error', 'Akun Anda sedang menunggu persetujuan admin.');
@@ -58,7 +71,6 @@ class GoogleController extends Controller
 
             Auth::login($user);
 
-            // Redirect berdasarkan role
             return match ($user->role) {
                 'petani'   => redirect()->route('petani.dashboard'),
                 'pengepul' => redirect()->route('pengepul.dashboard'),
@@ -68,8 +80,13 @@ class GoogleController extends Controller
             };
 
         } catch (\Exception $e) {
+            Log::error('Google OAuth error saat proses user: ' . $e->getMessage(), [
+                'class'       => get_class($e),
+                'file'        => $e->getFile() . ':' . $e->getLine(),
+                'google_email'=> $googleUser->email ?? null,
+            ]);
             return redirect()->route('filament.admin.auth.login')
-                ->with('google_error', 'Login Google gagal: ' . $e->getMessage());
+                ->with('google_error', 'Terjadi kesalahan saat login. Silakan coba lagi.');
         }
     }
 }
