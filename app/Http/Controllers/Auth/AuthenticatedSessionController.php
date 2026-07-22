@@ -28,7 +28,15 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = auth()->user();
+
+        return redirect()->intended(match ($user->role ?? '') {
+            'petani'   => route('petani.dashboard'),
+            'pengepul' => route('pengepul.dashboard'),
+            'kub'      => route('kub.dashboard'),
+            'admin'    => route('filament.admin.pages.dashboard'),
+            default    => route('dashboard'),
+        });
     }
 
     /**

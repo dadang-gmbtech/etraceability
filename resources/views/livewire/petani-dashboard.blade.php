@@ -2,21 +2,14 @@
 
     {{-- Header --}}
     <header class="bg-amber-600 text-white shadow">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div>
-                <h1 class="text-xl font-bold">e-Traceability Gula Kelapa</h1>
-                <p class="text-amber-100 text-sm">
-                    Dashboard Petani
-                    @if($petani) — {{ $petani->nama }}
-                        <span class="opacity-70">({{ $petani->kode_petani }})</span>
-                    @endif
-                </p>
-            </div>
-            <a href="{{ route('auth.logout') }}"
-               onclick="return confirm('Yakin ingin logout?')"
-               class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                Logout
-            </a>
+        <div class="max-w-6xl mx-auto px-4 py-4">
+            <h1 class="text-xl font-bold">e-Traceability Gula Kelapa</h1>
+            <p class="text-amber-100 text-sm">
+                Dashboard Petani
+                @if($petani) — {{ $petani->nama }}
+                    <span class="opacity-70">({{ $petani->kode_petani }})</span>
+                @endif
+            </p>
         </div>
     </header>
 
@@ -61,48 +54,47 @@
             @if($lahans->isEmpty())
                 <p class="text-gray-400 text-sm">Belum ada data lahan terdaftar.</p>
             @else
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {{-- Tabel lahan --}}
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
-                                <tr>
-                                    <th class="px-4 py-2">Nama Lahan</th>
-                                    <th class="px-4 py-2">Pemilik</th>
-                                    <th class="px-4 py-2 text-right">Jumlah Pohon</th>
-                                    <th class="px-4 py-2 text-center">Tipe</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y">
-                                @foreach($lahans as $lahan)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 font-medium text-gray-800">{{ $lahan->nama_lahan }}</td>
-                                    <td class="px-4 py-3 text-gray-600">{{ $lahan->pemilik ?? '-' }}</td>
-                                    <td class="px-4 py-3 text-right font-medium">{{ number_format($lahan->jumlah_pohon) }}</td>
-                                    <td class="px-4 py-3 text-center">
-                                        <span class="px-2 py-0.5 rounded text-xs
-                                            {{ $lahan->jenis_geometri === 'polygon' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700' }}">
-                                            {{ $lahan->jenis_geometri === 'polygon' ? 'Polygon' : 'Titik' }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot class="bg-gray-50 text-xs font-medium text-gray-600">
-                                <tr>
-                                    <td colspan="2" class="px-4 py-2">Total</td>
-                                    <td class="px-4 py-2 text-right">{{ number_format($lahans->sum('jumlah_pohon')) }} pohon</td>
-                                    <td></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                {{-- Tabel lahan --}}
+                <div class="overflow-x-auto mb-6">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                            <tr>
+                                <th class="px-4 py-2">Nama Lahan</th>
+                                <th class="px-4 py-2">Pemilik</th>
+                                <th class="px-4 py-2 text-right">Jumlah Pohon</th>
+                                <th class="px-4 py-2 text-center">Tipe</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            @foreach($lahans as $lahan)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 font-medium text-gray-800">{{ $lahan->nama_lahan }}</td>
+                                <td class="px-4 py-3 text-gray-600">{{ $lahan->pemilik ?? '-' }}</td>
+                                <td class="px-4 py-3 text-right font-medium">{{ number_format($lahan->jumlah_pohon) }}</td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="px-2 py-0.5 rounded text-xs
+                                        {{ $lahan->jenis_geometri === 'polygon' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700' }}">
+                                        {{ $lahan->jenis_geometri === 'polygon' ? 'Polygon' : 'Titik' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot class="bg-gray-50 text-xs font-medium text-gray-600">
+                            <tr>
+                                <td colspan="2" class="px-4 py-2">Total</td>
+                                <td class="px-4 py-2 text-right">{{ number_format($lahans->sum('jumlah_pohon')) }} pohon</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
 
-                    {{-- Peta mini lahan --}}
-                    <div>
-                        <div id="peta-lahan" class="w-full rounded-lg border border-gray-200" style="height: 280px;"></div>
-                        <p class="text-xs text-gray-400 mt-1 text-center">Peta batas lahan</p>
-                    </div>
+                {{-- Peta lahan full-width --}}
+                <div>
+                    <h3 class="text-sm font-medium text-gray-600 mb-2">Peta Lahan</h3>
+                    <div id="peta-lahan" class="w-full rounded-lg border border-gray-200" style="height: 420px;"></div>
+                    <p class="text-xs text-gray-400 mt-1 text-center">Peta batas lahan yang dikelola</p>
                 </div>
             @endif
         </div>
@@ -196,69 +188,82 @@
         @endif {{-- end belumDikonfigurasi --}}
     </div>
 
-    {{-- Peta Lahan Script --}}
+    {{-- ===== SCRIPT PETA LAHAN ===== --}}
     @if(!($belumDikonfigurasi ?? false) && $lahans->isNotEmpty())
     @php
         $lahanGeoData = $lahans->filter(fn($l) => !empty($l->koordinat))->values();
-    @endphp
-    @if($lahanGeoData->isNotEmpty())
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var map = L.map('peta-lahan');
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        var bounds = [];
-        var lahanData = @json($lahanGeoData->map(fn($l) => [
+        $lahanJsonData = $lahanGeoData->map(fn($l) => [
             'nama'     => $l->nama_lahan,
             'tipe'     => $l->jenis_geometri,
             'koordinat'=> $l->koordinat,
-        ]));
+        ]);
+    @endphp
+    <script>
+    (function() {
+        var map = L.map('peta-lahan');
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        @if($lahanGeoData->isNotEmpty())
+        var bounds = [];
+        var lahanData = @json($lahanJsonData);
 
         lahanData.forEach(function(lahan) {
-            if (!lahan.koordinat || lahan.koordinat.length === 0) return;
+            if (!lahan.koordinat) return;
+            var raw = lahan.koordinat;
 
             if (lahan.tipe === 'polygon') {
-                var coords = lahan.koordinat.map(function(c) {
-                    return [c.lat ?? c[0], c.lng ?? c[1]];
+                // GeoJSON Polygon: {type:"Polygon", coordinates:[[[lng,lat],...]]}
+                var ring = null;
+                if (raw.type === 'Polygon' && raw.coordinates) {
+                    ring = raw.coordinates[0]; // outer ring: [[lng, lat], ...]
+                } else if (Array.isArray(raw)) {
+                    ring = raw;
+                }
+                if (!ring || ring.length === 0) return;
+                var coords = ring.map(function(c) {
+                    // GeoJSON: [lng, lat] → Leaflet: [lat, lng]
+                    return Array.isArray(c) ? [c[1], c[0]] : [c.lat, c.lng];
                 });
                 var polygon = L.polygon(coords, {
-                    color: '#ea580c',
-                    fillColor: '#f97316',
+                    color: '#92400e',
+                    fillColor: '#d97706',
                     fillOpacity: 0.35,
                     weight: 2
                 }).addTo(map);
-                polygon.bindTooltip(lahan.nama, { permanent: false });
+                polygon.bindTooltip(lahan.nama, { permanent: true, direction: 'center', className: 'bg-amber-100 text-amber-900 text-xs border-amber-300' });
                 coords.forEach(function(c) { bounds.push(c); });
             } else {
-                var lat = lahan.koordinat.lat ?? lahan.koordinat[0];
-                var lng = lahan.koordinat.lng ?? lahan.koordinat[1];
-                L.circleMarker([lat, lng], {
-                    color: '#ea580c', fillColor: '#f97316',
-                    fillOpacity: 0.8, radius: 8
-                }).addTo(map).bindTooltip(lahan.nama);
+                // GeoJSON Point: {type:"Point", coordinates:[lng,lat]}
+                var lat, lng;
+                if (raw.type === 'Point' && raw.coordinates) {
+                    lng = raw.coordinates[0]; lat = raw.coordinates[1];
+                } else if (Array.isArray(raw)) {
+                    lat = raw[0]; lng = raw[1];
+                } else {
+                    lat = raw.lat; lng = raw.lng;
+                }
+                if (!lat || !lng) return;
+                var marker = L.circleMarker([lat, lng], {
+                    color: '#92400e', fillColor: '#d97706',
+                    fillOpacity: 0.8, radius: 10, weight: 2
+                }).addTo(map);
+                marker.bindTooltip(lahan.nama, { permanent: true, direction: 'top', className: 'bg-amber-100 text-amber-900 text-xs border-amber-300' });
                 bounds.push([lat, lng]);
             }
         });
 
         if (bounds.length > 0) {
-            map.fitBounds(bounds, { padding: [20, 20] });
+            map.fitBounds(bounds, { padding: [40, 40] });
         } else {
-            map.setView([-7.5, 109.2], 11);
+            map.setView([-7.5, 109.2], 12);
         }
-    });
+        @else
+        map.setView([-7.5, 109.2], 12);
+        @endif
+    })();
     </script>
-    @else
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var map = L.map('peta-lahan').setView([-7.5, 109.2], 11);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-    });
-    </script>
-    @endif
     @endif
 
 </div>

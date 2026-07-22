@@ -12,6 +12,27 @@ use Illuminate\Validation\ValidationException;
 
 class Login extends BaseLogin
 {
+    public function mount(): void
+    {
+        if (Filament::auth()->check()) {
+            $user = Filament::auth()->user();
+            if ($user->canAccessPanel(Filament::getCurrentPanel())) {
+                $this->redirectRoute('filament.admin.pages.dashboard');
+                return;
+            }
+            // Non-admin user already logged in — redirect to their dashboard
+            $this->redirect(match ($user->role ?? '') {
+                'petani'   => route('petani.dashboard'),
+                'pengepul' => route('pengepul.dashboard'),
+                'kub'      => route('kub.dashboard'),
+                default    => route('home'),
+            });
+            return;
+        }
+
+        parent::mount();
+    }
+
     protected function getPasswordFormComponent(): Component
     {
         return TextInput::make('password')
