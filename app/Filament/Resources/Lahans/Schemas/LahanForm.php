@@ -51,12 +51,10 @@ class LahanForm
                 Section::make('📍 Peta Lokasi Lahan')
                     ->description('Klik ikon pada peta untuk menandai lokasi. Gunakan marker untuk titik atau polygon untuk area lahan.')
                     ->schema([
+                        Hidden::make('koordinat'),
                         ViewField::make('koordinat_map')
                             ->view('filament.forms.components.lahan-map-field')
-                            ->columnSpanFull()
-                            ->dehydrated(false),
-
-                        Hidden::make('koordinat'),
+                            ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
             ]);
