@@ -54,8 +54,14 @@
             @if($lahans->isEmpty())
                 <p class="text-gray-400 text-sm">Belum ada data lahan terdaftar.</p>
             @else
+                {{-- Peta lahan full-width --}}
+                <div class="mb-6">
+                    <div id="peta-lahan" class="w-full rounded-lg border border-gray-200" style="height: 420px;"></div>
+                    <p class="text-xs text-gray-400 mt-1 text-center">Peta batas lahan yang dikelola</p>
+                </div>
+
                 {{-- Tabel lahan --}}
-                <div class="overflow-x-auto mb-6">
+                <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
                         <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
                             <tr>
@@ -88,13 +94,6 @@
                             </tr>
                         </tfoot>
                     </table>
-                </div>
-
-                {{-- Peta lahan full-width --}}
-                <div>
-                    <h3 class="text-sm font-medium text-gray-600 mb-2">Peta Lahan</h3>
-                    <div id="peta-lahan" class="w-full rounded-lg border border-gray-200" style="height: 420px;"></div>
-                    <p class="text-xs text-gray-400 mt-1 text-center">Peta batas lahan yang dikelola</p>
                 </div>
             @endif
         </div>
@@ -213,45 +212,32 @@
             if (!lahan.koordinat) return;
             var raw = lahan.koordinat;
 
-            if (lahan.tipe === 'polygon') {
-                // GeoJSON Polygon: {type:"Polygon", coordinates:[[[lng,lat],...]]}
-                var ring = null;
-                if (raw.type === 'Polygon' && raw.coordinates) {
-                    ring = raw.coordinates[0]; // outer ring: [[lng, lat], ...]
-                } else if (Array.isArray(raw)) {
-                    ring = raw;
-                }
-                if (!ring || ring.length === 0) return;
-                var coords = ring.map(function(c) {
-                    // GeoJSON: [lng, lat] → Leaflet: [lat, lng]
-                    return Array.isArray(c) ? [c[1], c[0]] : [c.lat, c.lng];
-                });
-                var polygon = L.polygon(coords, {
+            L.geoJSON(raw, {
+                style: {
                     color: '#92400e',
                     fillColor: '#d97706',
                     fillOpacity: 0.35,
                     weight: 2
-                }).addTo(map);
-                polygon.bindTooltip(lahan.nama, { permanent: true, direction: 'center', className: 'bg-amber-100 text-amber-900 text-xs border-amber-300' });
-                coords.forEach(function(c) { bounds.push(c); });
-            } else {
-                // GeoJSON Point: {type:"Point", coordinates:[lng,lat]}
-                var lat, lng;
-                if (raw.type === 'Point' && raw.coordinates) {
-                    lng = raw.coordinates[0]; lat = raw.coordinates[1];
-                } else if (Array.isArray(raw)) {
-                    lat = raw[0]; lng = raw[1];
-                } else {
-                    lat = raw.lat; lng = raw.lng;
-                }
-                if (!lat || !lng) return;
-                var marker = L.circleMarker([lat, lng], {
+                },
+                pointToLayer: (f, latlng) => L.circleMarker(latlng, {
                     color: '#92400e', fillColor: '#d97706',
                     fillOpacity: 0.8, radius: 10, weight: 2
-                }).addTo(map);
-                marker.bindTooltip(lahan.nama, { permanent: true, direction: 'top', className: 'bg-amber-100 text-amber-900 text-xs border-amber-300' });
-                bounds.push([lat, lng]);
-            }
+                }),
+                onEachFeature: (f, layer) => {
+                    layer.bindTooltip(lahan.nama, { permanent: true, direction: 'center', className: 'bg-amber-100 text-amber-900 text-xs border-amber-300' });
+                }
+            }).eachLayer(layer => {
+                layer.addTo(map);
+                try {
+                    if (layer.getBounds) {
+                        const b = layer.getBounds();
+                        if (b.isValid()) { bounds.push(b.getNorthEast()); bounds.push(b.getSouthWest()); }
+                    } else if (layer.getLatLng) {
+                        const ll = layer.getLatLng();
+                        bounds.push([ll.lat, ll.lng]);
+                    }
+                } catch(e) {}
+            });
         });
 
         if (bounds.length > 0) {
