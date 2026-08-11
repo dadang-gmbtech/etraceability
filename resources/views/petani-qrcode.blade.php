@@ -129,7 +129,7 @@
                 <div class="lbl">Lahan</div>
             </div>
             <div class="stat-box">
-                <div class="num">{{ $petani->lahans->sum('jumlah_pohon') }}</div>
+                <div class="num">{{ $petani->lahans->sum('jumlah_kelapa') }}</div>
                 <div class="lbl">Total Pohon</div>
             </div>
         </div>

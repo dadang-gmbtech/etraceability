@@ -51,6 +51,6 @@ class Petani extends Model
 
     public function getTotalPohonAttribute(): int
     {
-        return $this->lahans()->sum('jumlah_pohon');
+        return $this->lahans()->sum('jumlah_kelapa');
     }
 }

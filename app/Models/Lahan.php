@@ -13,9 +13,13 @@ class Lahan extends Model
         'petani_id',
         'kode_lahan',
         'pemilik',
-        'jumlah_pohon',
+        'blok_lahan',
+        'desa',
         'jenis_geometri',
         'koordinat',
+        'luas_lahan',
+        'jumlah_nira',
+        'jumlah_kelapa',
     ];
 
     protected $casts = [

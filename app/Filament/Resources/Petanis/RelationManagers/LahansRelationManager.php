@@ -41,7 +41,7 @@ class LahansRelationManager extends RelationManager
                     ->color(fn ($state) => $state === 'titik' ? 'info' : 'success')
                     ->formatStateUsing(fn ($state) => $state === 'titik' ? '📍 Titik' : '📐 Polygon'),
 
-                TextColumn::make('jumlah_pohon')
+                TextColumn::make('jumlah_kelapa')
                     ->label('Jumlah Pohon')
                     ->suffix(' pohon')
                     ->numeric()
@@ -59,7 +59,7 @@ class LahansRelationManager extends RelationManager
                     ->preloadRecordSelect()
                     ->recordSelectSearchColumns(['kode_lahan', 'pemilik'])
                     ->recordSelectOptionsQuery(fn ($query) => $query->whereNull('petani_id'))
-                    ->recordTitle(fn ($record) => "{$record->kode_lahan}" . ($record->pemilik ? " (pemilik: {$record->pemilik})" : '') . " — {$record->jumlah_pohon} pohon"),
+                    ->recordTitle(fn ($record) => "{$record->kode_lahan}" . ($record->pemilik ? " (pemilik: {$record->pemilik})" : '') . " — {$record->jumlah_kelapa} pohon"),
             ])
             ->actions([
                 DissociateAction::make()

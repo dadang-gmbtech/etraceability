@@ -148,7 +148,7 @@
                 const popup = `<b>@js($lahan->kode_lahan)</b>`
                     + `<br>Petani: @js($lahan->petani?->nama ?? '—')`
                     + `<br>Pemilik: @js($lahan->pemilik ?? '—')`
-                    + `<br>{{ $lahan->jumlah_pohon }} pohon kelapa`;
+                    + `<br>{{ $lahan->jumlah_kelapa }} pohon kelapa`;
 
                 if (geom.type === 'Point') {
                     const [lng, lat] = geom.coordinates;

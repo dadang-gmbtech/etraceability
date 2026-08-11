@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Lahans\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -19,44 +18,58 @@ class LahansTable
                     ->label('Kode Lahan')
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('pemilik')
                     ->label('Pemilik Lahan')
                     ->default('—')
                     ->searchable(),
+
+                TextColumn::make('blok_lahan')
+                    ->label('Blok Lahan')
+                    ->default('—')
+                    ->searchable(),
+
+                TextColumn::make('desa')
+                    ->label('Desa')
+                    ->default('—')
+                    ->searchable(),
+
+                TextColumn::make('koordinat')
+                    ->label('Koordinat')
+                    ->formatStateUsing(fn ($state) => $state ? '✓ Ada' : '—')
+                    ->badge()
+                    ->color(fn ($state) => $state ? 'success' : 'gray'),
+
                 TextColumn::make('petani.nama')
                     ->label('Dikelola Petani')
                     ->default('—')
                     ->searchable(),
-                TextColumn::make('jumlah_pohon')
-                    ->label('Jumlah Pohon')
+
+                TextColumn::make('petani.kode_petani')
+                    ->label('Kode Petani')
+                    ->default('—')
+                    ->searchable(),
+
+                TextColumn::make('luas_lahan')
+                    ->label('Luas Lahan (ha)')
+                    ->numeric(decimalPlaces: 4)
+                    ->default('—')
+                    ->sortable()
+                    ->suffix(' ha'),
+
+                TextColumn::make('jumlah_nira')
+                    ->label('Jumlah Nira')
                     ->numeric()
                     ->sortable()
                     ->suffix(' pohon'),
-                TextColumn::make('jenis_geometri')
-                    ->label('Jenis')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'titik'   => 'info',
-                        'polygon' => 'success',
-                        default   => 'gray',
-                    })
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        'titik'   => '📍 Titik',
-                        'polygon' => '📐 Polygon',
-                        default   => $state,
-                    }),
-                TextColumn::make('created_at')
-                    ->dateTime()
+
+                TextColumn::make('jumlah_kelapa')
+                    ->label('Jumlah Kelapa')
+                    ->numeric()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->suffix(' pohon'),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->recordActions([
                 EditAction::make(),
             ])

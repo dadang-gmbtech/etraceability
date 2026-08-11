@@ -45,7 +45,7 @@
             </div>
             <div>
                 <p class="text-xs text-gray-400">Total Pohon Terlibat</p>
-                <p class="font-bold text-green-700 text-lg">{{ $allLahans->sum('jumlah_pohon') }}</p>
+                <p class="font-bold text-green-700 text-lg">{{ $allLahans->sum('jumlah_kelapa') }}</p>
             </div>
         </div>
     </div>
@@ -81,13 +81,13 @@
                             <div class="flex items-center gap-2 text-sm py-0.5">
                                 <span>{{ $lahan->jenis_geometri === 'titik' ? '📍' : '📐' }}</span>
                                 <span class="font-medium">{{ $lahan->kode_lahan }}</span>
-                                <span class="text-gray-400 text-xs">{{ $lahan->jumlah_pohon }} pohon</span>
+                                <span class="text-gray-400 text-xs">{{ $lahan->jumlah_kelapa }} pohon</span>
                             </div>
                         @empty
                             <p class="text-xs text-gray-400 italic">Belum ada lahan terdaftar</p>
                         @endforelse
                         <div class="mt-1 text-xs font-semibold text-gray-600">
-                            Total: {{ $petani->lahans->sum('jumlah_pohon') }} pohon kelapa
+                            Total: {{ $petani->lahans->sum('jumlah_kelapa') }} pohon kelapa
                         </div>
                     </div>
 
@@ -134,7 +134,7 @@
                 <p class="text-xs text-gray-500 mt-1">Lahan Terlibat</p>
             </div>
             <div>
-                <p class="text-3xl font-bold text-green-700">{{ $allLahans->sum('jumlah_pohon') }}</p>
+                <p class="text-3xl font-bold text-green-700">{{ $allLahans->sum('jumlah_kelapa') }}</p>
                 <p class="text-xs text-gray-500 mt-1">Total Pohon</p>
             </div>
             <div>
@@ -172,7 +172,7 @@
                 const geom = @json($geom);
                 const popup = '<b>{{ addslashes($lahan->kode_lahan) }}</b>' +
                     '<br>Petani: {{ addslashes($lahan->petani?->nama ?? "") }}' +
-                    '<br>{{ $lahan->jumlah_pohon }} pohon kelapa';
+                    '<br>{{ $lahan->jumlah_kelapa }} pohon kelapa';
 
                 L.geoJSON(geom, {
                     style: { color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35, weight: 2 },

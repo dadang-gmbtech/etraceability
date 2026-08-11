@@ -16,39 +16,67 @@ class LahanForm
     {
         return $schema
             ->components([
-                Grid::make(2)
+                Section::make('Informasi Lahan')
                     ->schema([
-                        TextInput::make('kode_lahan')
-                            ->label('Kode Lahan')
-                            ->required()
-                            ->maxLength(9)
-                            ->alphaDash()
-                            ->placeholder('Maks. 9 karakter (huruf/angka)')
-                            ->columnSpan(1),
+                        Grid::make(3)->schema([
+                            TextInput::make('kode_lahan')
+                                ->label('Kode Lahan')
+                                ->required()
+                                ->maxLength(9)
+                                ->alphaDash()
+                                ->placeholder('Maks. 9 karakter'),
 
-                        TextInput::make('pemilik')
-                            ->label('Pemilik Lahan')
-                            ->placeholder('Nama pemilik lahan')
-                            ->columnSpan(1),
+                            TextInput::make('pemilik')
+                                ->label('Pemilik Lahan')
+                                ->placeholder('Nama pemilik lahan'),
 
-                        TextInput::make('jumlah_pohon')
-                            ->label('Jumlah Pohon Kelapa')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0)
-                            ->default(0)
-                            ->suffix('pohon')
-                            ->columnSpan(1),
+                            TextInput::make('blok_lahan')
+                                ->label('Blok Lahan')
+                                ->placeholder('Contoh: A1, B2'),
+                        ]),
 
-                        Select::make('jenis_geometri')
-                            ->label('Jenis Geometri Lahan')
-                            ->options([
-                                'titik'   => '📍 Titik — lokasi tidak diketahui batasnya',
-                                'polygon' => '📐 Polygon — batas lahan diketahui',
-                            ])
-                            ->default('polygon')
-                            ->required()
-                            ->columnSpan(1),
+                        Grid::make(2)->schema([
+                            TextInput::make('desa')
+                                ->label('Desa')
+                                ->placeholder('Nama desa'),
+
+                            Select::make('jenis_geometri')
+                                ->label('Jenis Geometri')
+                                ->options([
+                                    'titik'   => '📍 Titik',
+                                    'polygon' => '📐 Polygon',
+                                ])
+                                ->default('polygon')
+                                ->required(),
+                        ]),
+                    ]),
+
+                Section::make('Data Produksi')
+                    ->schema([
+                        Grid::make(3)->schema([
+                            TextInput::make('luas_lahan')
+                                ->label('Luas Lahan (ha)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->step(0.0001)
+                                ->placeholder('0.0000')
+                                ->suffix('ha'),
+
+                            TextInput::make('jumlah_nira')
+                                ->label('Jumlah Nira')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0)
+                                ->suffix('pohon'),
+
+                            TextInput::make('jumlah_kelapa')
+                                ->label('Jumlah Kelapa')
+                                ->required()
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0)
+                                ->suffix('pohon'),
+                        ]),
                     ]),
 
                 Section::make('📍 Peta Lokasi Lahan')
