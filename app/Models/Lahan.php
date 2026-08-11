@@ -11,7 +11,7 @@ class Lahan extends Model
 
     protected $fillable = [
         'petani_id',
-        'nama_lahan',
+        'kode_lahan',
         'pemilik',
         'jumlah_pohon',
         'jenis_geometri',

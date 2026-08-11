@@ -43,7 +43,7 @@ class SoilMeasurementResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('device.lahan.nama_lahan')
+                TextColumn::make('device.lahan.kode_lahan')
                     ->label('Lahan')
                     ->placeholder('—')
                     ->searchable(),

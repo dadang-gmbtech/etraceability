@@ -50,8 +50,8 @@ class DeviceResource extends Resource
 
                         Select::make('lahan_id')
                             ->label('Lahan (Lokasi Sensor)')
-                            ->relationship('lahan', 'nama_lahan')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nama_lahan} ({$record->petani?->nama})")
+                            ->relationship('lahan', 'kode_lahan')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->kode_lahan} ({$record->petani?->nama})")
                             ->searchable()
                             ->preload()
                             ->nullable()
@@ -148,7 +148,7 @@ class DeviceResource extends Resource
                     ->label('Nama Perangkat')
                     ->searchable(),
 
-                TextColumn::make('lahan.nama_lahan')
+                TextColumn::make('lahan.kode_lahan')
                     ->label('Lahan')
                     ->placeholder('—')
                     ->searchable(),

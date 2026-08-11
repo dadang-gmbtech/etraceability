@@ -91,7 +91,7 @@
                 <div class="flex-1 min-w-0">
                     <p class="font-semibold text-gray-800 text-sm truncate">{{ $device->name }}</p>
                     <p class="text-xs text-gray-400">
-                        Lahan: {{ $device->lahan?->nama_lahan ?? '—' }}
+                        Lahan: {{ $device->lahan?->kode_lahan ?? '—' }}
                         @if ($device->lahan?->petani)
                             · Petani: {{ $device->lahan->petani->nama }}
                         @endif
@@ -211,22 +211,29 @@
         @if ($geom && isset($geom['type']))
         (function() {
             const geom = @json($geom);
-            const popup = `<b>@js($lahan->nama_lahan)</b>`
+            const popup = `<b>@js($lahan->kode_lahan)</b>`
                 + `<br>Petani: @js($lahan->petani?->nama ?? '—')`
                 + `<br>Pemilik: @js($lahan->pemilik ?? '—')`
                 + `<br>{{ $lahan->jumlah_pohon }} pohon kelapa`;
 
-            if (geom.type === 'Point') {
-                const [lng, lat] = geom.coordinates;
-                const m = L.marker([lat, lng], { icon: lahanIcon() }).bindPopup(popup);
-                layers.lahan.addLayer(m);
-                allPoints.push([lat, lng]);
-            } else if (geom.type === 'Polygon') {
-                const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
-                const p = L.polygon(coords, { color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35, weight: 2 }).bindPopup(popup);
-                layers.lahan.addLayer(p);
-                coords.forEach(c => allPoints.push(c));
-            }
+            L.geoJSON(geom, {
+                style: { color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35, weight: 2 },
+                pointToLayer: (f, latlng) => L.marker(latlng, { icon: lahanIcon() }),
+                onEachFeature: (f, layer) => {
+                    layer.bindPopup(popup);
+                }
+            }).eachLayer(layer => {
+                layers.lahan.addLayer(layer);
+                try {
+                    if (layer.getBounds) {
+                        const b = layer.getBounds();
+                        if (b.isValid()) { allPoints.push(b.getNorthEast()); allPoints.push(b.getSouthWest()); }
+                    } else if (layer.getLatLng) {
+                        const ll = layer.getLatLng();
+                        allPoints.push([ll.lat, ll.lng]);
+                    }
+                } catch(e) {}
+            });
         })();
         @endif
     @endforeach
@@ -255,7 +262,7 @@
 
             let popup = `<b>📡 @js($device->name)</b>`
                 + `<br><span style="font-size:11px;color:${active ? '#16a34a' : '#6b7280'}">${active ? '● Aktif' : '○ Nonaktif'}</span>`
-                + `<br>Lahan: @js($device->lahan?->nama_lahan ?? '—')`
+                + `<br>Lahan: @js($device->lahan?->kode_lahan ?? '—')`
                 + `<br>Petani: @js($device->lahan?->petani?->nama ?? '—')`
                 + `<br><small style="color:#6b7280">${lat.toFixed(6)}, ${lng.toFixed(6)}</small>`;
 

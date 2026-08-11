@@ -24,10 +24,10 @@ class LahansRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('nama_lahan')
+            ->recordTitleAttribute('kode_lahan')
             ->columns([
-                TextColumn::make('nama_lahan')
-                    ->label('Nama Lahan')
+                TextColumn::make('kode_lahan')
+                    ->label('Kode Lahan')
                     ->searchable()
                     ->sortable(),
 
@@ -57,9 +57,9 @@ class LahansRelationManager extends RelationManager
                 AssociateAction::make()
                     ->label('Tambahkan Lahan')
                     ->preloadRecordSelect()
-                    ->recordSelectSearchColumns(['nama_lahan', 'pemilik'])
+                    ->recordSelectSearchColumns(['kode_lahan', 'pemilik'])
                     ->recordSelectOptionsQuery(fn ($query) => $query->whereNull('petani_id'))
-                    ->recordTitle(fn ($record) => "{$record->nama_lahan}" . ($record->pemilik ? " (pemilik: {$record->pemilik})" : '') . " — {$record->jumlah_pohon} pohon"),
+                    ->recordTitle(fn ($record) => "{$record->kode_lahan}" . ($record->pemilik ? " (pemilik: {$record->pemilik})" : '') . " — {$record->jumlah_pohon} pohon"),
             ])
             ->actions([
                 DissociateAction::make()

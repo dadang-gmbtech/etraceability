@@ -18,9 +18,12 @@ class LahanForm
             ->components([
                 Grid::make(2)
                     ->schema([
-                        TextInput::make('nama_lahan')
-                            ->label('Nama Lahan')
+                        TextInput::make('kode_lahan')
+                            ->label('Kode Lahan')
                             ->required()
+                            ->maxLength(9)
+                            ->alphaDash()
+                            ->placeholder('Maks. 9 karakter (huruf/angka)')
                             ->columnSpan(1),
 
                         TextInput::make('pemilik')

@@ -58,7 +58,7 @@ class IotController extends Controller
             'status'      => 'ok',
             'id'          => $measurement->id,
             'perangkat'   => $device->name,
-            'lahan'       => $device->lahan?->nama_lahan,
+            'lahan'       => $device->lahan?->kode_lahan,
             'diterima_at' => $measurement->created_at->toIso8601String(),
         ], 201);
     }

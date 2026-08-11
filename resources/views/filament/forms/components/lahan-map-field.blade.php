@@ -19,9 +19,9 @@
         // Lahan lain yang sudah ada koordinatnya
         $lahanLainData = \App\Models\Lahan::whereNotNull('koordinat')
             ->when($currentId, fn ($q) => $q->where('id', '!=', $currentId))
-            ->get(['nama_lahan', 'pemilik', 'jumlah_pohon', 'koordinat'])
+            ->get(['kode_lahan', 'pemilik', 'jumlah_pohon', 'koordinat'])
             ->map(fn ($l) => [
-                'nama'         => $l->nama_lahan,
+                'nama'         => $l->kode_lahan,
                 'pemilik'      => $l->pemilik ?? '',
                 'jumlah_pohon' => $l->jumlah_pohon,
                 'geom'         => is_array($l->koordinat) ? $l->koordinat : json_decode($l->koordinat, true),

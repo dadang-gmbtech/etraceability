@@ -44,7 +44,7 @@ class PetaniDashboard extends Component
 
         // Lahan yang dikelola petani ini
         $lahans = Lahan::where('petani_id', $petaniId)
-            ->orderBy('nama_lahan')
+            ->orderBy('kode_lahan')
             ->get();
 
         // Statistik setoran

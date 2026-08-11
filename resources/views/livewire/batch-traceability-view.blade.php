@@ -80,7 +80,7 @@
                         @forelse ($petani->lahans as $lahan)
                             <div class="flex items-center gap-2 text-sm py-0.5">
                                 <span>{{ $lahan->jenis_geometri === 'titik' ? '📍' : '📐' }}</span>
-                                <span class="font-medium">{{ $lahan->nama_lahan }}</span>
+                                <span class="font-medium">{{ $lahan->kode_lahan }}</span>
                                 <span class="text-gray-400 text-xs">{{ $lahan->jumlah_pohon }} pohon</span>
                             </div>
                         @empty
@@ -170,20 +170,28 @@
             @if ($geom && isset($geom['type']))
             (function() {
                 const geom = @json($geom);
-                const popup = '<b>{{ addslashes($lahan->nama_lahan) }}</b>' +
+                const popup = '<b>{{ addslashes($lahan->kode_lahan) }}</b>' +
                     '<br>Petani: {{ addslashes($lahan->petani?->nama ?? "") }}' +
                     '<br>{{ $lahan->jumlah_pohon }} pohon kelapa';
 
-                if (geom.type === 'Point') {
-                    const lat = geom.coordinates[1], lng = geom.coordinates[0];
-                    L.marker([lat, lng]).addTo(map).bindPopup(popup);
-                    bounds.push([lat, lng]);
-                } else if (geom.type === 'Polygon') {
-                    const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
-                    L.polygon(coords, { color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35, weight: 2 })
-                        .addTo(map).bindPopup(popup);
-                    coords.forEach(c => bounds.push(c));
-                }
+                L.geoJSON(geom, {
+                    style: { color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35, weight: 2 },
+                    pointToLayer: (f, latlng) => L.marker(latlng),
+                    onEachFeature: (f, layer) => {
+                        layer.bindPopup(popup);
+                    }
+                }).eachLayer(layer => {
+                    layer.addTo(map);
+                    try {
+                        if (layer.getBounds) {
+                            const b = layer.getBounds();
+                            if (b.isValid()) { bounds.push(b.getNorthEast()); bounds.push(b.getSouthWest()); }
+                        } else if (layer.getLatLng) {
+                            const ll = layer.getLatLng();
+                            bounds.push([ll.lat, ll.lng]);
+                        }
+                    } catch(e) {}
+                });
             })();
             @endif
         @endforeach

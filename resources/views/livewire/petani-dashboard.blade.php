@@ -74,7 +74,7 @@
                         <tbody class="divide-y">
                             @foreach($lahans as $lahan)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 font-medium text-gray-800">{{ $lahan->nama_lahan }}</td>
+                                <td class="px-4 py-3 font-medium text-gray-800">{{ $lahan->kode_lahan }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $lahan->pemilik ?? '-' }}</td>
                                 <td class="px-4 py-3 text-right font-medium">{{ number_format($lahan->jumlah_pohon) }}</td>
                                 <td class="px-4 py-3 text-center">
@@ -192,7 +192,7 @@
     @php
         $lahanGeoData = $lahans->filter(fn($l) => !empty($l->koordinat))->values();
         $lahanJsonData = $lahanGeoData->map(fn($l) => [
-            'nama'     => $l->nama_lahan,
+            'nama'     => $l->kode_lahan,
             'tipe'     => $l->jenis_geometri,
             'koordinat'=> $l->koordinat,
         ]);

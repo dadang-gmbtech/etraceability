@@ -145,7 +145,7 @@
             @if ($geom && isset($geom['type']))
             (function() {
                 const geom = @json($geom);
-                const popup = `<b>@js($lahan->nama_lahan)</b>`
+                const popup = `<b>@js($lahan->kode_lahan)</b>`
                     + `<br>Petani: @js($lahan->petani?->nama ?? '—')`
                     + `<br>Pemilik: @js($lahan->pemilik ?? '—')`
                     + `<br>{{ $lahan->jumlah_pohon }} pohon kelapa`;
@@ -187,7 +187,7 @@
 
                 let popup = `<b>📡 @js($device->name)</b>`
                     + `<br><span style="color:${active ? '#16a34a' : '#6b7280'}">${active ? '● Aktif' : '○ Nonaktif'}</span>`
-                    + `<br>Lahan: @js($device->lahan?->nama_lahan ?? '—')`
+                    + `<br>Lahan: @js($device->lahan?->kode_lahan ?? '—')`
                     + `<br>Petani: @js($device->lahan?->petani?->nama ?? '—')`;
 
                 @if ($lastMeasure)

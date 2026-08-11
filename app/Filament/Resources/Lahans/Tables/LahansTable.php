@@ -15,8 +15,8 @@ class LahansTable
     {
         return $table
             ->columns([
-                TextColumn::make('nama_lahan')
-                    ->label('Nama Lahan')
+                TextColumn::make('kode_lahan')
+                    ->label('Kode Lahan')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('pemilik')
