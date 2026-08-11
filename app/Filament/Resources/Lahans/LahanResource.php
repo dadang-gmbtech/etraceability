@@ -20,7 +20,9 @@ class LahanResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;
 
-    protected static ?string $navigationLabel = 'Data Lahan';
+    protected static ?string $navigationLabel  = 'Data Lahan';
+    protected static ?string $modelLabel       = 'Lahan';
+    protected static ?string $pluralModelLabel = 'Data Lahan';
 
     public static function form(Schema $schema): Schema
     {
