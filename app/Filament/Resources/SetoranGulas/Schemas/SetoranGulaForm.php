@@ -35,7 +35,7 @@ class SetoranGulaForm
                                     ->required()
                                     ->live()
                                     ->afterStateUpdated(fn ($state, $set) => $set('_total_pohon', 
-                                        $state ? Petani::find($state)?->lahans()->sum('jumlah_kelapa') : 0
+                                        $state ? Petani::find($state)?->lahans()->sum('kelapa_buah') : 0
                                     )),
 
                                 Select::make('jenis_produk')
@@ -70,7 +70,7 @@ class SetoranGulaForm
                                         
                                         // Cek koefisien anomali
                                         if ($petaniId && $state) {
-                                            $totalPohon = Petani::find($petaniId)?->lahans()->sum('jumlah_kelapa') ?? 0;
+                                            $totalPohon = Petani::find($petaniId)?->lahans()->sum('kelapa_buah') ?? 0;
                                             $koefisienMax = Setting::getValue('koefisien_max_kg_per_pohon', 0.75);
                                             
                                             if ($totalPohon > 0) {

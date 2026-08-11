@@ -62,20 +62,20 @@ class LahanForm
                                 ->placeholder('0.0000')
                                 ->suffix('ha'),
 
-                            TextInput::make('jumlah_nira')
-                                ->label('Jumlah Nira')
+                            TextInput::make('pohon_di_deres')
+                                ->label('Pohon di Deres')
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0)
                                 ->suffix('pohon'),
 
-                            TextInput::make('jumlah_kelapa')
-                                ->label('Jumlah Kelapa')
+                            TextInput::make('kelapa_buah')
+                                ->label('Kelapa Buah')
                                 ->required()
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0)
-                                ->suffix('pohon'),
+                                ->suffix('buah'),
                         ]),
                     ]),
 

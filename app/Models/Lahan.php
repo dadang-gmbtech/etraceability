@@ -18,8 +18,8 @@ class Lahan extends Model
         'jenis_geometri',
         'koordinat',
         'luas_lahan',
-        'jumlah_nira',
-        'jumlah_kelapa',
+        'pohon_di_deres',
+        'kelapa_buah',
     ];
 
     protected $casts = [

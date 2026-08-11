@@ -35,7 +35,7 @@ class PetanisTable
                     ->sortable(),
                 TextColumn::make('total_pohon')
                     ->label('Total Pohon')
-                    ->getStateUsing(fn ($record) => $record->lahans()->sum('jumlah_kelapa'))
+                    ->getStateUsing(fn ($record) => $record->lahans()->sum('kelapa_buah'))
                     ->suffix(' pohon'),
                 TextColumn::make('desa')
                     ->label('Desa')

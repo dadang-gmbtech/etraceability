@@ -57,17 +57,17 @@ class LahansTable
                     ->sortable()
                     ->suffix(' ha'),
 
-                TextColumn::make('jumlah_nira')
-                    ->label('Jumlah Nira')
+                TextColumn::make('pohon_di_deres')
+                    ->label('Pohon di Deres')
                     ->numeric()
                     ->sortable()
                     ->suffix(' pohon'),
 
-                TextColumn::make('jumlah_kelapa')
-                    ->label('Jumlah Kelapa')
+                TextColumn::make('kelapa_buah')
+                    ->label('Kelapa Buah')
                     ->numeric()
                     ->sortable()
-                    ->suffix(' pohon'),
+                    ->suffix(' buah'),
             ])
             ->filters([])
             ->recordActions([
