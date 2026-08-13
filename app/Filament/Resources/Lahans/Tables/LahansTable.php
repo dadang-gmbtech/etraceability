@@ -41,12 +41,12 @@ class LahansTable
                     ->color(fn ($state) => $state ? 'success' : 'gray'),
 
                 TextColumn::make('petani.nama')
-                    ->label('Dikelola Petani')
+                    ->label('Penderes')
                     ->default('—')
                     ->searchable(),
 
                 TextColumn::make('petani.kode_petani')
-                    ->label('Kode Petani')
+                    ->label('Kode Penderes')
                     ->default('—')
                     ->searchable(),
 

@@ -1,196 +1,154 @@
-@once
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-@endonce
-
-<div class="fi-wi-peta-sebaran">
+<x-filament-widgets::widget>
+<style>
+.adm-stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:1rem;margin-bottom:1rem}
+@media(max-width:768px){.adm-stat-grid{grid-template-columns:repeat(2,1fr)}}
+.adm-stat-card{background:#fff;border-radius:.75rem;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,.08);border-left:4px solid #ccc}
+.dark .adm-stat-card{background:#1f2937}
+.adm-stat-card .lbl{font-size:.75rem;color:#9ca3af;margin:0}
+.adm-stat-card .val{font-size:1.5rem;font-weight:700;color:#111827;margin:0}
+.dark .adm-stat-card .val{color:#f9fafb}
+.adm-map-card{background:#fff;border-radius:.75rem;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden}
+.dark .adm-map-card{background:#1f2937}
+.adm-map-head{padding:.875rem 1.25rem .5rem}
+.adm-map-head h2{font-size:1rem;font-weight:600;color:#111827;margin:0 0 .2rem}
+.dark .adm-map-head h2{color:#f9fafb}
+.adm-map-head p{font-size:.75rem;color:#9ca3af;margin:0}
+.adm-layer-row{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;padding:.5rem 1.25rem .75rem}
+.adm-layer-row .ttl{font-size:.7rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
+.adm-layer-row label{display:flex;align-items:center;gap:.375rem;font-size:.875rem;color:#374151;cursor:pointer}
+.dark .adm-layer-row label{color:#d1d5db}
+.adm-dot{display:inline-block;width:10px;height:10px;border-radius:50%}
+</style>
 
     {{-- Statistik --}}
-    <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border-l-4 border-emerald-500">
-            <p class="text-gray-400 text-xs">Petani Aktif</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $statistik['total_petani'] }}</p>
+    <div class="adm-stat-grid">
+        <div class="adm-stat-card" style="border-color:#10b981">
+            <p class="lbl">Petani Aktif</p>
+            <p class="val">{{ $statistik['total_petani'] }}</p>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border-l-4 border-teal-500">
-            <p class="text-gray-400 text-xs">Total Lahan</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $statistik['total_lahan'] }}</p>
+        <div class="adm-stat-card" style="border-color:#14b8a6">
+            <p class="lbl">Total Lahan</p>
+            <p class="val">{{ $statistik['total_lahan'] }}</p>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border-l-4 border-lime-500">
-            <p class="text-gray-400 text-xs">Total Pohon Kelapa</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $statistik['total_pohon'] }}</p>
+        <div class="adm-stat-card" style="border-color:#84cc16">
+            <p class="lbl">Total Pohon Kelapa</p>
+            <p class="val">{{ number_format($statistik['total_pohon']) }}</p>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
-            <p class="text-gray-400 text-xs">Pengepul / Koperasi</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $statistik['total_pengepul'] }}</p>
+        <div class="adm-stat-card" style="border-color:#3b82f6">
+            <p class="lbl">Pengepul / Koperasi</p>
+            <p class="val">{{ $statistik['total_pengepul'] }}</p>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border-l-4 border-purple-500">
-            <p class="text-gray-400 text-xs">Total Batch</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $statistik['total_batch'] }}</p>
+        <div class="adm-stat-card" style="border-color:#a855f7">
+            <p class="lbl">Total Batch</p>
+            <p class="val">{{ $statistik['total_batch'] }}</p>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border-l-4 border-orange-500">
-            <p class="text-gray-400 text-xs">Perangkat IoT</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $statistik['total_device'] }}</p>
-        </div>
-    </div>
-
-    {{-- Header peta --}}
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
-        <h2 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-1">Peta Sebaran Lahan & Perangkat IoT</h2>
-        <p class="text-xs text-gray-400 mb-3">Visualisasi spasial lahan kelapa dan perangkat IoT dalam rantai pasok gula kelapa.</p>
-
-        {{-- Layer Toggle --}}
-        <div class="flex flex-wrap items-center gap-3 mb-3">
-            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">TAMPILKAN LAYER:</span>
-
-            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm text-gray-600 dark:text-gray-300">
-                <input type="checkbox" checked onchange="admToggleLayer('lahan', this.checked)"
-                       class="rounded text-emerald-500 focus:ring-emerald-400">
-                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                Lahan ({{ $lahans->count() }})
-            </label>
-
-            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm text-gray-600 dark:text-gray-300">
-                <input type="checkbox" checked onchange="admToggleLayer('pengepul', this.checked)"
-                       class="rounded text-blue-500 focus:ring-blue-400">
-                <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                Pengepul ({{ $pengepul->count() }})
-            </label>
-
-            <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm text-gray-600 dark:text-gray-300">
-                <input type="checkbox" checked onchange="admToggleLayer('iot', this.checked)"
-                       class="rounded text-orange-500 focus:ring-orange-400">
-                <span class="inline-block w-2.5 h-2.5 rounded-full bg-orange-500"></span>
-                Perangkat IoT ({{ $devices->count() }})
-            </label>
-        </div>
-
-        {{-- Map — Alpine x-init menggantikan @script agar lebih andal di Filament widget --}}
-        <div
-            wire:ignore
-            x-data="{}"
-            x-init="
-                (function waitL() {
-                    if (!window.L || !document.getElementById('adm-map-sebaran')) {
-                        return setTimeout(waitL, 100);
-                    }
-
-                    if (window._admMap) {
-                        window._admMap.remove();
-                        window._admMap = null;
-                    }
-
-                    const layers = {
-                        lahan:    L.layerGroup(),
-                        pengepul: L.layerGroup(),
-                        iot:      L.layerGroup(),
-                    };
-
-                    const map = L.map('adm-map-sebaran').setView([-7.281166, 109.286804], 11);
-                    window._admMap = map;
-                    window.admToggleLayers = layers;
-
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(map);
-
-                    Object.values(layers).forEach(lg => lg.addTo(map));
-
-                    window.admToggleLayer = function(name, show) {
-                        show ? layers[name].addTo(map) : map.removeLayer(layers[name]);
-                    };
-
-                    function lahanIcon() {
-                        const svg = '<svg width=\"32\" height=\"42\" viewBox=\"0 0 32 42\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M16 1C9.92 1 5 5.92 5 12c0 9 11 27 11 27S27 21 27 12c0-6.08-4.92-11-11-11z\" fill=\"#16a34a\" stroke=\"#14532d\" stroke-width=\"1\"/><circle cx=\"16\" cy=\"12\" r=\"6\" fill=\"white\"/><line x1=\"16\" y1=\"17\" x2=\"16\" y2=\"10\" stroke=\"#16a34a\" stroke-width=\"1.5\"/><ellipse cx=\"14\" cy=\"11\" rx=\"3\" ry=\"1.5\" fill=\"#16a34a\" transform=\"rotate(-20 14 11)\"/><ellipse cx=\"18\" cy=\"11\" rx=\"3\" ry=\"1.5\" fill=\"#16a34a\" transform=\"rotate(20 18 11)\"/><ellipse cx=\"16\" cy=\"9.5\" rx=\"3\" ry=\"1.5\" fill=\"#16a34a\"/></svg>';
-                        return L.divIcon({ className:'', html:svg, iconSize:[32,42], iconAnchor:[16,42], popupAnchor:[0,-42] });
-                    }
-
-                    function pengepulIcon() {
-                        const svg = '<svg width=\"32\" height=\"42\" viewBox=\"0 0 32 42\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M16 1C9.92 1 5 5.92 5 12c0 9 11 27 11 27S27 21 27 12c0-6.08-4.92-11-11-11z\" fill=\"#3b82f6\" stroke=\"#1e3a8a\" stroke-width=\"1\"/><circle cx=\"16\" cy=\"12\" r=\"6\" fill=\"white\"/><rect x=\"11\" y=\"13\" width=\"10\" height=\"5\" rx=\"0.5\" fill=\"#3b82f6\"/><polygon points=\"16,8 11,13 21,13\" fill=\"#3b82f6\"/></svg>';
-                        return L.divIcon({ className:'', html:svg, iconSize:[32,42], iconAnchor:[16,42], popupAnchor:[0,-42] });
-                    }
-
-                    function iotIcon(active) {
-                        const fill = active ? '#f97316' : '#9ca3af';
-                        const ring = active ? '#ea580c' : '#6b7280';
-                        const svg = '<svg width=\"30\" height=\"38\" viewBox=\"0 0 30 38\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M15 1C9.48 1 5 5.48 5 11c0 8.5 10 24 10 24s10-15.5 10-24c0-5.52-4.48-10-10-10z\" fill=\"'+fill+'\" stroke=\"'+ring+'\" stroke-width=\"1\"/><circle cx=\"15\" cy=\"11\" r=\"4.5\" fill=\"white\"/><circle cx=\"15\" cy=\"11\" r=\"1.5\" fill=\"'+fill+'\"/></svg>';
-                        return L.divIcon({ className:'', html:svg, iconSize:[30,38], iconAnchor:[15,38], popupAnchor:[0,-38] });
-                    }
-
-                    const allPoints = [];
-
-                    @foreach ($lahans as $lahan)
-                        @php
-                            $geom = $lahan->koordinat;
-                            if (is_string($geom)) { $geom = json_decode($geom, true); }
-                        @endphp
-                        @if ($geom && isset($geom['type']))
-                        (function() {
-                            const geom = @json($geom);
-                            const popup = '<b>@js($lahan->kode_lahan)</b>'
-                                + '<br>Petani: @js($lahan->petani?->nama ?? "—")'
-                                + '<br>Pemilik: @js($lahan->pemilik ?? "—")'
-                                + '<br>{{ $lahan->kelapa_buah }} kelapa buah';
-
-                            if (geom.type === 'FeatureCollection') {
-                                geom.features.forEach(function(f) {
-                                    addGeom(f.geometry, popup);
-                                });
-                            } else {
-                                addGeom(geom, popup);
-                            }
-
-                            function addGeom(g, p) {
-                                if (g.type === 'Point') {
-                                    const [lng, lat] = g.coordinates;
-                                    layers.lahan.addLayer(L.marker([lat,lng], {icon:lahanIcon()}).bindPopup(p));
-                                    allPoints.push([lat, lng]);
-                                } else if (g.type === 'Polygon' || g.type === 'MultiPolygon') {
-                                    const coords = g.type === 'Polygon'
-                                        ? g.coordinates[0].map(c => [c[1],c[0]])
-                                        : g.coordinates.flat(1).map(c => [c[1],c[0]]);
-                                    const poly = L.polygon(coords, {color:'#ea580c',fillColor:'#f97316',fillOpacity:0.35,weight:2}).bindPopup(p);
-                                    layers.lahan.addLayer(poly);
-                                    coords.forEach(c => allPoints.push(c));
-                                }
-                            }
-                        })();
-                        @endif
-                    @endforeach
-
-                    @foreach ($pengepul as $p)
-                        @if ($p->lokasi_lat && $p->lokasi_lng)
-                        (function() {
-                            const m = L.marker([{{ $p->lokasi_lat }}, {{ $p->lokasi_lng }}], {icon: pengepulIcon()})
-                                .bindPopup('<b>{{ addslashes($p->nama_koperasi) }}</b><br>Pengepul / Koperasi');
-                            layers.pengepul.addLayer(m);
-                            allPoints.push([{{ $p->lokasi_lat }}, {{ $p->lokasi_lng }}]);
-                        })();
-                        @endif
-                    @endforeach
-
-                    @foreach ($devices as $device)
-                    (function() {
-                        const lat = {{ $device->latitude }};
-                        const lng = {{ $device->longitude }};
-                        const active = {{ $device->status === 'active' ? 'true' : 'false' }};
-                        const popup = '<b>📡 @js($device->name)</b>'
-                            + '<br>Lahan: @js($device->lahan?->kode_lahan ?? "—")'
-                            + '<br>Petani: @js($device->lahan?->petani?->nama ?? "—")';
-                        layers.iot.addLayer(L.marker([lat,lng], {icon:iotIcon(active)}).bindPopup(popup));
-                        allPoints.push([lat, lng]);
-                    })();
-                    @endforeach
-
-                    if (allPoints.length > 0) {
-                        try { map.fitBounds(allPoints, {padding:[40,40]}); } catch(e) {}
-                    }
-
-                    setTimeout(() => map.invalidateSize(), 500);
-                })();
-            "
-        >
-            <div id="adm-map-sebaran" style="height: 520px;" class="rounded-xl border border-gray-200 shadow-sm"></div>
+        <div class="adm-stat-card" style="border-color:#f97316">
+            <p class="lbl">Perangkat IoT</p>
+            <p class="val">{{ $statistik['total_device'] }}</p>
         </div>
     </div>
 
-</div>
+    {{-- Peta --}}
+    <div class="adm-map-card">
+        <div class="adm-map-head">
+            <h2>Peta Sebaran Lahan &amp; Perangkat IoT</h2>
+            <p>Visualisasi spasial lahan kelapa dan perangkat IoT dalam rantai pasok gula kelapa.</p>
+        </div>
+
+        <div class="adm-layer-row">
+            <span class="ttl">Tampilkan Layer:</span>
+            <label>
+                <input type="checkbox" checked onchange="admToggleLayer('lahan',this.checked)">
+                <span class="adm-dot" style="background:#f97316"></span>
+                Lahan ({{ $statistik['total_lahan'] }})
+            </label>
+            <label>
+                <input type="checkbox" checked onchange="admToggleLayer('pengepul',this.checked)">
+                <span class="adm-dot" style="background:#3b82f6"></span>
+                Pengepul ({{ $statistik['total_pengepul'] }})
+            </label>
+            <label>
+                <input type="checkbox" checked onchange="admToggleLayer('iot',this.checked)">
+                <span class="adm-dot" style="background:#2563eb"></span>
+                Perangkat IoT ({{ $statistik['total_device'] }})
+            </label>
+        </div>
+
+        <div wire:ignore>
+            <div id="adm-map-sebaran" style="width:100%;height:640px;display:block;"></div>
+        </div>
+    </div>
+
+</x-filament-widgets::widget>
+
+@script
+<script>
+var _admLahanGeo    = @json($lahanGeo->values()->all());
+var _admPengepulGeo = @json($pengepulGeo->values()->all());
+var _admDeviceGeo   = @json($deviceGeo->values()->all());
+
+(function admInitMap() {
+    var el = document.getElementById('adm-map-sebaran');
+    if (!window.L || !el) return setTimeout(admInitMap, 150);
+
+    if (window._admMap) { try { window._admMap.remove(); } catch(e) {} window._admMap = null; }
+
+    var layers = { lahan: L.layerGroup(), pengepul: L.layerGroup(), iot: L.layerGroup() };
+    var map    = L.map(el, {zoomControl:true}).setView([-7.281166, 109.286804], 11);
+    window._admMap        = map;
+    window.admToggleLayer = function(n,s){ s ? layers[n].addTo(map) : map.removeLayer(layers[n]); };
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution:'&copy; OpenStreetMap contributors', maxZoom:19
+    }).addTo(map);
+    layers.lahan.addTo(map); layers.pengepul.addTo(map); layers.iot.addTo(map);
+
+    var bounds = [];
+
+    (_admLahanGeo||[]).forEach(function(lahan) {
+        if (!lahan.geom) return;
+        var pop = '<b>'+(lahan.kode||'?')+'</b><br>Penderes: '+lahan.petani+'<br>Pemilik: '+lahan.pemilik;
+        function addG(g) {
+            if (!g||!g.type) return;
+            if (g.type==='FeatureCollection') { (g.features||[]).forEach(function(f){addG(f.geometry||f);}); }
+            else if (g.type==='Feature') { addG(g.geometry); }
+            else if (g.type==='GeometryCollection') { (g.geometries||[]).forEach(addG); }
+            else if (g.type==='Point') {
+                var lat=g.coordinates[1],lng=g.coordinates[0];
+                layers.lahan.addLayer(L.circleMarker([lat,lng],{radius:5,color:'#ea580c',fillColor:'#f97316',fillOpacity:.8,weight:1}).bindPopup(pop));
+                bounds.push([lat,lng]);
+            } else if (g.type==='Polygon') {
+                var c=g.coordinates[0].map(function(x){return[x[1],x[0]];});
+                layers.lahan.addLayer(L.polygon(c,{color:'#ea580c',fillColor:'#f97316',fillOpacity:.4,weight:2}).bindPopup(pop));
+                c.forEach(function(x){bounds.push(x);});
+            } else if (g.type==='MultiPolygon') {
+                g.coordinates.forEach(function(p){
+                    var c=p[0].map(function(x){return[x[1],x[0]];});
+                    layers.lahan.addLayer(L.polygon(c,{color:'#ea580c',fillColor:'#f97316',fillOpacity:.4,weight:2}).bindPopup(pop));
+                    c.forEach(function(x){bounds.push(x);});
+                });
+            }
+        }
+        addG(lahan.geom);
+    });
+
+    (_admPengepulGeo||[]).forEach(function(p) {
+        var ic=L.divIcon({className:'',iconSize:[22,22],iconAnchor:[11,22],
+            html:'<div style="width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-bottom:22px solid #3b82f6"></div>'});
+        layers.pengepul.addLayer(L.marker([p.lat,p.lng],{icon:ic}).bindPopup('<b>'+p.nama+'</b>'));
+        bounds.push([p.lat,p.lng]);
+    });
+
+    (_admDeviceGeo||[]).forEach(function(d) {
+        var c=d.active?'#2563eb':'#93c5fd';
+        var ic=L.divIcon({className:'',iconSize:[14,14],iconAnchor:[7,7],
+            html:'<div style="width:14px;height:14px;border-radius:50%;background:'+c+';border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>'});
+        layers.iot.addLayer(L.marker([d.lat,d.lng],{icon:ic}).bindPopup('<b>'+d.name+'</b><br>Lahan: '+d.lahan));
+        bounds.push([d.lat,d.lng]);
+    });
+
+    if (bounds.length) { try { map.fitBounds(bounds,{padding:[30,30],maxZoom:16}); } catch(e){} }
+    setTimeout(function(){ map.invalidateSize(); }, 300);
+})();
+</script>
+@endscript

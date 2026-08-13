@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Petanis;
 use App\Filament\Resources\Petanis\Pages\CreatePetani;
 use App\Filament\Resources\Petanis\Pages\EditPetani;
 use App\Filament\Resources\Petanis\Pages\ListPetanis;
+use App\Filament\Resources\Petanis\Pages\RekapSetoranPetani;
 use App\Filament\Resources\Petanis\RelationManagers\LahansRelationManager;
 use App\Filament\Resources\Petanis\Schemas\PetaniForm;
 use App\Filament\Resources\Petanis\Tables\PetanisTable;
@@ -45,9 +46,10 @@ class PetaniResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListPetanis::route('/'),
+            'index'  => ListPetanis::route('/'),
             'create' => CreatePetani::route('/create'),
-            'edit' => EditPetani::route('/{record}/edit'),
+            'edit'   => EditPetani::route('/{record}/edit'),
+            'rekap'  => RekapSetoranPetani::route('/{record}/rekap'),
         ];
     }
 }

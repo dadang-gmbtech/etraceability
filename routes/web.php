@@ -11,6 +11,7 @@ use App\Livewire\PetaniDashboard;
 use App\Livewire\PengepulDashboard;
 use App\Livewire\KubDashboard;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Portal\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,17 @@ Route::get('/petani/{kode_petani}/qrcode', function ($kode_petani) {
     $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(200)->generate($kode_petani);
     return view('petani-qrcode', compact('petani', 'qrCode'));
 })->name('petani.qrcode');
+
+// --- Portal Petani (login terpisah dari admin Filament) ---
+Route::prefix('portal')->name('portal.')->group(function () {
+    Route::get('masuk', [LoginController::class, 'showLogin'])->name('login');
+    Route::post('masuk', [LoginController::class, 'login'])->name('login.post');
+    Route::post('keluar', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+
+    Route::middleware(['auth'])->group(function () {
+        Route::get('rekap', \App\Livewire\PetaniDashboard::class)->name('rekap');
+    });
+});
 
 // --- Google Auth Routes ---
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('google.login');

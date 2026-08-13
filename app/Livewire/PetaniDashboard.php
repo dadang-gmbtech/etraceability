@@ -15,7 +15,7 @@ class PetaniDashboard extends Component
     {
         $user = auth()->user();
         if (!$user || !$user->isPetani()) {
-            redirect()->route('filament.admin.auth.login');
+            redirect()->route('portal.login');
             return;
         }
         if (!$user->petani_id) {

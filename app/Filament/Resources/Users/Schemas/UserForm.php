@@ -56,22 +56,19 @@ class UserForm
                 ->required(),
         ];
 
-        // Petani/Pengepul link hanya di form Edit
-        if ($operation === 'edit') {
-            $components[] = Select::make('petani_id')
-                ->label('Link ke Data Petani (opsional)')
-                ->options(Petani::orderBy('nama')->pluck('nama', 'id'))
-                ->searchable()
-                ->placeholder('— Tidak ditautkan —')
-                ->helperText('Isi jika role Petani');
+        $components[] = Select::make('petani_id')
+            ->label('Link ke Data Petani (opsional)')
+            ->options(Petani::orderBy('nama')->pluck('nama', 'id'))
+            ->searchable()
+            ->placeholder('— Tidak ditautkan —')
+            ->helperText('Isi jika role = Petani');
 
-            $components[] = Select::make('pengepul_id')
-                ->label('Link ke Data Pengepul (opsional)')
-                ->options(Pengepul::orderBy('nama_koperasi')->pluck('nama_koperasi', 'id'))
-                ->searchable()
-                ->placeholder('— Tidak ditautkan —')
-                ->helperText('Isi jika role Pengepul');
-        }
+        $components[] = Select::make('pengepul_id')
+            ->label('Link ke Data Pengepul (opsional)')
+            ->options(Pengepul::orderBy('nama_koperasi')->pluck('nama_koperasi', 'id'))
+            ->searchable()
+            ->placeholder('— Tidak ditautkan —')
+            ->helperText('Isi jika role = Pengepul');
 
         return $schema->components($components);
     }

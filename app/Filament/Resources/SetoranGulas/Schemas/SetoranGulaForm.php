@@ -8,6 +8,7 @@ use App\Models\Petani;
 use App\Models\Setting;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
+use Illuminate\Support\HtmlString;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
@@ -24,19 +25,41 @@ class SetoranGulaForm
             ->components([
                 Section::make('Informasi Setoran')
                     ->schema([
+                        // Baris scan QR
+                        Grid::make(['default' => 1, 'md' => 2])->schema([
+                            TextInput::make('kode_qr_scan')
+                                ->label('Scan QR / Kode Petani')
+                                ->placeholder('Arahkan scanner hardware atau ketik kode petani...')
+                                ->helperText('Hardware QR scanner: scan langsung, otomatis terisi. Atau klik "Buka Kamera" untuk scan via kamera.')
+                                ->live(debounce: 600)
+                                ->dehydrated(false)
+                                ->afterStateUpdated(function ($state, $set) {
+                                    if (empty(trim((string) $state))) return;
+                                    $kode   = strtoupper(trim((string) $state));
+                                    $petani = Petani::where('kode_petani', $kode)->first();
+                                    if ($petani) {
+                                        $set('petani_id', $petani->id);
+                                    }
+                                    $set('kode_qr_scan', null);
+                                }),
+                            Placeholder::make('qr_camera_ui')
+                                ->label('Kamera QR')
+                                ->content(fn () => new HtmlString(
+                                    view('filament.forms.components.qr-petani-camera')->render()
+                                )),
+                        ]),
+
                         Grid::make(2)
                             ->schema([
                                 Select::make('petani_id')
-                                    ->label('Petani (atau Scan QR Kode Petani)')
+                                    ->label('Petani')
                                     ->relationship('petani', 'nama')
                                     ->getOptionLabelFromRecordUsing(fn ($record) => "[{$record->kode_petani}] {$record->nama}")
                                     ->searchable()
                                     ->preload()
                                     ->required()
                                     ->live()
-                                    ->afterStateUpdated(fn ($state, $set) => $set('_total_pohon', 
-                                        $state ? Petani::find($state)?->lahans()->sum('kelapa_buah') : 0
-                                    )),
+                                    ->afterStateUpdated(fn ($state, $set) => null),
 
                                 Select::make('jenis_produk')
                                     ->label('Jenis Produk')
@@ -64,20 +87,32 @@ class SetoranGulaForm
                                     ->required()
                                     ->live()
                                     ->afterStateUpdated(function ($state, $get, $set) {
-                                        $petaniId = $get('petani_id');
-                                        $tanggal = $get('tanggal_setor');
+                                        $petaniId    = $get('petani_id');
+                                        $tanggal     = $get('tanggal_setor');
                                         $jenisProduk = $get('jenis_produk');
-                                        
-                                        // Cek koefisien anomali
+
+                                        // Cek anomali berdasarkan threshold per jenis produk
                                         if ($petaniId && $state) {
-                                            $totalPohon = Petani::find($petaniId)?->lahans()->sum('kelapa_buah') ?? 0;
-                                            $koefisienMax = Setting::getValue('koefisien_max_kg_per_pohon', 0.75);
-                                            
+                                            $totalPohon = Petani::find($petaniId)?->lahans()->sum('pohon_di_deres') ?? 0;
+
+                                            $settingKey = match ($jenisProduk) {
+                                                'gula_semut' => 'anomali_max_gula_semut_per_pohon',
+                                                'raw_sugar'  => 'anomali_max_raw_sugar_per_pohon',
+                                                'nira'       => 'anomali_max_nira_per_pohon',
+                                                'gula_cair'  => 'anomali_max_gula_cair_per_pohon',
+                                                default      => 'koefisien_max_kg_per_pohon',
+                                            };
+                                            $batasMax = (float) Setting::getValue($settingKey, 0.75);
+
                                             if ($totalPohon > 0) {
-                                                $kgPerPohon = (float)$state / $totalPohon;
-                                                if ($kgPerPohon > (float)$koefisienMax) {
+                                                $perPohon = (float) $state / $totalPohon;
+                                                if ($perPohon > $batasMax) {
                                                     $set('is_anomali', true);
-                                                    $set('keterangan_anomali', "⚠️ Setoran melebihi batas! " . number_format($kgPerPohon, 3) . " kg/pohon (batas: {$koefisienMax} kg/pohon)");
+                                                    $set('keterangan_anomali',
+                                                        '⚠️ Setoran melebihi batas! '
+                                                        . number_format($perPohon, 3)
+                                                        . ' per pohon (batas: ' . $batasMax . ' per pohon)'
+                                                    );
                                                 } else {
                                                     $set('is_anomali', false);
                                                     $set('keterangan_anomali', null);
@@ -138,7 +173,14 @@ class SetoranGulaForm
                             ->schema([
                                 Toggle::make('is_anomali')
                                     ->label('Terdeteksi Anomali')
-                                    ->helperText("Otomatis jika melebihi " . Setting::getValue('koefisien_max_kg_per_pohon', 0.75) . " kg/pohon/hari")
+                                    ->helperText(
+                                        'Batas per jenis produk — '
+                                        . 'Gula Semut: ' . Setting::getValue('anomali_max_gula_semut_per_pohon', 0.75) . ' kg | '
+                                        . 'Raw Sugar: '  . Setting::getValue('anomali_max_raw_sugar_per_pohon', 0.75) . ' kg | '
+                                        . 'Nira: '       . Setting::getValue('anomali_max_nira_per_pohon', 2.0)  . ' L | '
+                                        . 'Gula Cair: '  . Setting::getValue('anomali_max_gula_cair_per_pohon', 1.5) . ' kg'
+                                        . ' — (per pohon di deres)'
+                                    )
                                     ->disabled(),
 
                                 Textarea::make('keterangan_anomali')
@@ -146,8 +188,7 @@ class SetoranGulaForm
                                     ->rows(2)
                                     ->nullable(),
                             ]),
-                    ])
-                    ->collapsed(),
+                    ]),
             ]);
     }
 }

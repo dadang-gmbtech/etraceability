@@ -15,6 +15,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
@@ -46,7 +48,7 @@ class HargaHarianResource extends Resource
                     ])
                     ->required(),
                 TextInput::make('harga_per_kg')
-                    ->label('Harga per Kg (Rp)')
+                    ->label('Harga per Kg / Liter (Rp)')
                     ->numeric()
                     ->prefix('Rp')
                     ->required(),
@@ -62,9 +64,17 @@ class HargaHarianResource extends Resource
                     ->label('Tanggal')
                     ->date('d/m/Y')
                     ->sortable(),
+
                 TextColumn::make('jenis_produk')
                     ->label('Produk')
                     ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'gula_semut' => 'success',
+                        'raw_sugar'  => 'info',
+                        'nira'       => 'primary',
+                        'gula_cair'  => 'warning',
+                        default      => 'gray',
+                    })
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'gula_semut' => '🍚 Gula Semut',
                         'raw_sugar'  => '🔵 Raw Sugar',
@@ -72,14 +82,54 @@ class HargaHarianResource extends Resource
                         'gula_cair'  => '🫙 Gula Cair',
                         default      => $state,
                     }),
+
                 TextColumn::make('harga_per_kg')
-                    ->label('Harga/kg')
+                    ->label('Harga / kg·liter')
                     ->money('IDR')
                     ->sortable(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diperbarui')
+                    ->since()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->groups([
+                Group::make('tanggal')
+                    ->label('Tanggal')
+                    ->date('d F Y')
+                    ->collapsible()
+                    ->orderQueryUsing(fn ($query, $direction) => $query->orderBy('tanggal', $direction)),
+            ])
+            ->defaultGroup('tanggal')
             ->defaultSort('tanggal', 'desc')
+            ->filters([
+                Filter::make('periode')
+                    ->form([
+                        DatePicker::make('dari')->label('Dari Tanggal'),
+                        DatePicker::make('sampai')->label('Sampai Tanggal'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['dari'],    fn ($q) => $q->where('tanggal', '>=', $data['dari']))
+                            ->when($data['sampai'],  fn ($q) => $q->where('tanggal', '<=', $data['sampai']));
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['dari'])   $indicators[] = 'Dari: ' . $data['dari'];
+                        if ($data['sampai']) $indicators[] = 'Sampai: ' . $data['sampai'];
+                        return $indicators;
+                    }),
+            ])
             ->recordActions([EditAction::make()])
             ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()])]);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            \App\Filament\Resources\HargaHarians\Widgets\HargaHarianChartWidget::class,
+        ];
     }
 
     public static function getPages(): array
