@@ -120,10 +120,11 @@ class SetoranGulaForm
                                             }
                                         }
                                         
-                                        // Hitung total harga
+                                        // Hitung total harga — ambil harga terakhir yang berlaku (≤ tanggal setoran)
                                         if ($tanggal && $jenisProduk && $state) {
-                                            $harga = HargaHarian::where('tanggal', $tanggal)
-                                                ->where('jenis_produk', $jenisProduk)
+                                            $harga = HargaHarian::where('jenis_produk', $jenisProduk)
+                                                ->where('tanggal', '<=', $tanggal)
+                                                ->orderByDesc('tanggal')
                                                 ->first();
                                             if ($harga) {
                                                 $set('total_harga', round((float)$state * $harga->harga_per_kg, 2));

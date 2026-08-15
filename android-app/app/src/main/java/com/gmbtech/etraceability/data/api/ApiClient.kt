@@ -15,7 +15,7 @@ object ApiClient {
     //   • Perangkat fisik   → http://<IP-LAN-Anda>/etraceability/api/
     //   • Production        → https://domain-anda.com/api/
     // ─────────────────────────────────────────────────────────────────────
-    const val BASE_URL = "http://10.0.2.2/etraceability/api/"
+    const val BASE_URL = "https://traceability.riset.unsoed.ac.id/api/"
 
     private var sessionManager: SessionManager? = null
 

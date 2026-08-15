@@ -160,7 +160,7 @@ table.rekap-tbl tr:hover td{background:#f9fafb}
         <div style="display:flex;gap:.5rem;align-items:center;font-size:.7rem;color:#9ca3af;">
             @foreach($chartData['datasets'] as $ds)
                 <span style="display:inline-flex;align-items:center;gap:.25rem;">
-                    <span style="width:10px;height:10px;border-radius:2px;background:{{ $ds['backgroundColor'] }};display:inline-block"></span>
+                    <span style="width:16px;height:2px;border-radius:2px;background:{{ $ds['borderColor'] }};display:inline-block"></span>
                     {{ $ds['label'] }}
                 </span>
             @endforeach
@@ -238,7 +238,7 @@ table.rekap-tbl tr:hover td{background:#f9fafb}
         if (canvas._chart) { canvas._chart.destroy(); }
 
         canvas._chart = new Chart(canvas, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: chartData.labels,
                 datasets: chartData.datasets,
@@ -246,13 +246,15 @@ table.rekap-tbl tr:hover td{background:#f9fafb}
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
                 plugins: {
-                    legend: { display: true, position: 'top' },
+                    legend: { display: true, position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 16 } },
                     tooltip: {
                         mode: 'index',
                         intersect: false,
                         callbacks: {
                             label: function(ctx) {
+                                if (ctx.parsed.y === null) return null;
                                 return ' ' + ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' kg';
                             },
                         },
@@ -260,20 +262,15 @@ table.rekap-tbl tr:hover td{background:#f9fafb}
                 },
                 scales: {
                     x: {
-                        stacked: true,
                         grid: { display: false },
                         ticks: { maxTicksLimit: 15, maxRotation: 45 },
                     },
                     y: {
-                        stacked: true,
                         beginAtZero: true,
                         grid: { color: 'rgba(156,163,175,0.15)' },
-                        ticks: {
-                            callback: function(v) { return v + ' kg'; },
-                        },
+                        ticks: { callback: function(v) { return v + ' kg'; } },
                     },
                 },
-                interaction: { mode: 'index', intersect: false },
             },
         });
     }
