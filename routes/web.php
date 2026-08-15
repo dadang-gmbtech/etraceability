@@ -73,8 +73,8 @@ Route::get('/auth/logout', function (\Illuminate\Http\Request $request) {
     \Illuminate\Support\Facades\Auth::logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
-    return redirect('/admin');
-})->middleware('auth')->name('auth.logout');
+    return redirect(config('app.url') . '/admin/login');
+})->name('auth.logout');
 
 Route::get('/', function () {
     if (auth()->check()) {
