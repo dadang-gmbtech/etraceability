@@ -37,12 +37,14 @@ class PetaniRepository(private val session: SessionManager) {
         return try {
             val response = api.profil()
             if (response.isSuccessful) {
-                Result.Success(response.body()?.data!!)
+                val data = response.body()?.data
+                    ?: return Result.Error("Data profil tidak ditemukan")
+                Result.Success(data)
             } else {
                 Result.Error(parseError(response.code()))
             }
         } catch (e: Exception) {
-            Result.Error("Gagal memuat profil: ${e.message}")
+            Result.Error("Tidak dapat terhubung ke server: ${e.message ?: e.javaClass.simpleName}")
         }
     }
 
@@ -63,12 +65,14 @@ class PetaniRepository(private val session: SessionManager) {
         return try {
             val response = api.setoran(bulan, page)
             if (response.isSuccessful) {
-                Result.Success(response.body()?.data!!)
+                val data = response.body()?.data
+                    ?: return Result.Error("Data setoran tidak ditemukan")
+                Result.Success(data)
             } else {
                 Result.Error(parseError(response.code()))
             }
         } catch (e: Exception) {
-            Result.Error("Gagal memuat setoran: ${e.message}")
+            Result.Error("Tidak dapat terhubung ke server: ${e.message ?: e.javaClass.simpleName}")
         }
     }
 
@@ -76,12 +80,14 @@ class PetaniRepository(private val session: SessionManager) {
         return try {
             val response = api.rekap(tahun)
             if (response.isSuccessful) {
-                Result.Success(response.body()?.data!!)
+                val data = response.body()?.data
+                    ?: return Result.Error("Data rekap tidak ditemukan")
+                Result.Success(data)
             } else {
                 Result.Error(parseError(response.code()))
             }
         } catch (e: Exception) {
-            Result.Error("Gagal memuat rekap: ${e.message}")
+            Result.Error("Tidak dapat terhubung ke server: ${e.message ?: e.javaClass.simpleName}")
         }
     }
 

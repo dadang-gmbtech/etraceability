@@ -18,6 +18,7 @@ data class DashboardUiState(
     val lahans: List<Lahan> = emptyList(),
     val rekap: RekapResponse? = null,
     val error: String? = null,
+    val sessionExpired: Boolean = false,
 )
 
 class DashboardViewModel(
@@ -38,12 +39,21 @@ class DashboardViewModel(
             val lahanResult  = repository.getLahan()
             val rekapResult  = repository.getRekap()
 
+            val errorMsg = (profilResult as? Result.Error)?.message
+                ?: (rekapResult  as? Result.Error)?.message
+
+            // Auto-logout when session is expired (401)
+            if (errorMsg == "Sesi habis, silakan login ulang") {
+                repository.logout()
+                _state.value = DashboardUiState(sessionExpired = true)
+                return@launch
+            }
+
             _state.value = DashboardUiState(
                 profil = (profilResult as? Result.Success)?.data,
                 lahans = (lahanResult  as? Result.Success)?.data ?: emptyList(),
                 rekap  = (rekapResult  as? Result.Success)?.data,
-                error  = (profilResult as? Result.Error)?.message
-                    ?: (rekapResult  as? Result.Error)?.message,
+                error  = errorMsg,
             )
         }
     }

@@ -14,8 +14,7 @@ class PetaniApiController extends Controller
 {
     /**
      * POST /api/v1/petani/login
-     * Body: { email, password }
-     * Response: { token, petani: { nama, kode_petani } }
+     * Android LoginResponse: { token, petani_id, nama, kode_petani }
      */
     public function login(Request $request): JsonResponse
     {
@@ -38,46 +37,44 @@ class PetaniApiController extends Controller
             return response()->json(['message' => 'Akun belum disetujui oleh admin.'], 403);
         }
 
-        // Generate token jika belum ada (user lama sebelum booted event)
         if (empty($user->api_token)) {
             $user->api_token = \Illuminate\Support\Str::random(48);
             $user->save();
         }
 
         return response()->json([
-            'token'  => $user->api_token,
-            'petani' => $user->petani ? [
-                'id'          => $user->petani->id,
-                'nama'        => $user->petani->nama,
-                'kode_petani' => $user->petani->kode_petani,
-                'no_hp'       => $user->petani->no_hp,
-            ] : null,
+            'token'       => $user->api_token,
+            'petani_id'   => $user->petani_id,
+            'nama'        => $user->petani?->nama ?? $user->name,
+            'kode_petani' => $user->petani?->kode_petani ?? '',
         ]);
     }
 
     /**
      * GET /api/v1/petani/profil
+     * Android ApiResponse<Profil>: { data: { id, kode_petani, nama, no_hp, desa, kecamatan, kabupaten, aktif } }
      */
     public function profil(Request $request): JsonResponse
     {
-        $user   = $request->user();
-        $petani = $user->petani;
+        $petani = $request->user()->petani;
 
         return response()->json([
-            'petani' => [
+            'data' => [
                 'id'          => $petani?->id,
-                'nama'        => $petani?->nama,
                 'kode_petani' => $petani?->kode_petani,
+                'nama'        => $petani?->nama,
                 'no_hp'       => $petani?->no_hp,
                 'desa'        => $petani?->desa,
                 'kecamatan'   => $petani?->kecamatan,
-                'aktif'       => $petani?->aktif,
+                'kabupaten'   => $petani?->kabupaten,
+                'aktif'       => (bool) ($petani?->aktif ?? false),
             ],
         ]);
     }
 
     /**
      * GET /api/v1/petani/lahan
+     * Android ApiResponse<List<Lahan>>: { data: [{ id, kode_lahan, nama_lahan, pohon_di_deres, kelapa_buah, luas, desa }] }
      */
     public function lahan(Request $request): JsonResponse
     {
@@ -85,17 +82,25 @@ class PetaniApiController extends Controller
 
         $lahans = Lahan::where('petani_id', $petaniId)
             ->orderBy('kode_lahan')
-            ->get(['kode_lahan', 'pemilik', 'blok_lahan', 'desa', 'luas_lahan', 'pohon_di_deres', 'kelapa_buah', 'jenis_geometri']);
+            ->get();
 
         return response()->json([
-            'total_lahan' => $lahans->count(),
-            'total_pohon' => $lahans->sum('pohon_di_deres'),
-            'lahans'      => $lahans,
+            'data' => $lahans->map(fn ($l) => [
+                'id'           => $l->id,
+                'kode_lahan'   => $l->kode_lahan,
+                'nama_lahan'   => $l->pemilik ?? $l->blok_lahan,
+                'pohon_di_deres' => (int) $l->pohon_di_deres,
+                'kelapa_buah'  => $l->kelapa_buah !== null ? (int) $l->kelapa_buah : null,
+                'luas'         => $l->luas_lahan !== null ? (float) $l->luas_lahan : null,
+                'desa'         => $l->desa,
+            ]),
         ]);
     }
 
     /**
      * GET /api/v1/petani/setoran?page=1&per_page=20&bulan=2026-08
+     * Android ApiResponse<SetoranPaginated>:
+     *   { data: { data: [...], current_page, last_page, total } }
      */
     public function setoran(Request $request): JsonResponse
     {
@@ -103,7 +108,6 @@ class PetaniApiController extends Controller
         $perPage  = min((int) $request->get('per_page', 20), 100);
 
         $query = SetoranGula::where('petani_id', $petaniId)
-            ->with('batchProduksi:id,trace_id')
             ->orderByDesc('tanggal_setor');
 
         if ($bulan = $request->get('bulan')) {
@@ -113,27 +117,29 @@ class PetaniApiController extends Controller
         $paginated = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $paginated->items() ? collect($paginated->items())->map(fn ($s) => [
-                'id'           => $s->id,
-                'tanggal'      => $s->tanggal_setor?->format('Y-m-d'),
-                'jenis_produk' => $s->jenis_produk,
-                'berat_kg'     => (float) $s->berat_kg,
-                'total_harga'  => (float) $s->total_harga,
-                'is_anomali'   => (bool) $s->is_anomali,
-                'trace_id'     => $s->batchProduksi?->trace_id,
-            ]) : [],
-            'meta' => [
-                'total'        => $paginated->total(),
-                'per_page'     => $paginated->perPage(),
+            'data' => [
+                'data'         => collect($paginated->items())->map(fn ($s) => [
+                    'id'                  => $s->id,
+                    'tanggal_setor'       => $s->tanggal_setor?->format('Y-m-d'),
+                    'jenis_produk'        => $s->jenis_produk,
+                    'berat_kg'            => (float) $s->berat_kg,
+                    'total_harga'         => (float) $s->total_harga,
+                    'hari_akumulasi'      => $s->hari_akumulasi !== null ? (int) $s->hari_akumulasi : null,
+                    'is_anomali'          => (bool) $s->is_anomali,
+                    'keterangan_anomali'  => $s->keterangan_anomali,
+                ]),
                 'current_page' => $paginated->currentPage(),
                 'last_page'    => $paginated->lastPage(),
+                'total'        => $paginated->total(),
             ],
         ]);
     }
 
     /**
      * GET /api/v1/petani/rekap?tahun=2026
-     * Rekap per bulan untuk grafik di app Android.
+     * Android ApiResponse<RekapResponse>:
+     *   { data: { bulanan: [{ bulan, jumlah, total_kg, total_harga, anomali }],
+     *             total: { total_kg, total_harga, jumlah_setor, jumlah_anomali } } }
      */
     public function rekap(Request $request): JsonResponse
     {
@@ -142,27 +148,31 @@ class PetaniApiController extends Controller
 
         $rekapBulanan = SetoranGula::where('petani_id', $petaniId)
             ->whereYear('tanggal_setor', $tahun)
-            ->selectRaw("TO_CHAR(tanggal_setor, 'YYYY-MM') as bulan, COUNT(*) as jumlah, SUM(berat_kg) as total_kg, SUM(total_harga) as total_harga")
+            ->selectRaw("TO_CHAR(tanggal_setor, 'YYYY-MM') as bulan, COUNT(*) as jumlah, SUM(berat_kg) as total_kg, SUM(total_harga) as total_harga, SUM(CASE WHEN is_anomali THEN 1 ELSE 0 END) as anomali")
             ->groupBy('bulan')
             ->orderBy('bulan')
             ->get();
 
-        $totalKg   = SetoranGula::where('petani_id', $petaniId)->sum('berat_kg');
-        $totalUang = SetoranGula::where('petani_id', $petaniId)->sum('total_harga');
-        $jumlah    = SetoranGula::where('petani_id', $petaniId)->count();
+        $totalAll = SetoranGula::where('petani_id', $petaniId)
+            ->selectRaw("SUM(berat_kg) as total_kg, SUM(total_harga) as total_harga, COUNT(*) as jumlah_setor, SUM(CASE WHEN is_anomali THEN 1 ELSE 0 END) as jumlah_anomali")
+            ->first();
 
         return response()->json([
-            'ringkasan' => [
-                'total_kg'      => (float) $totalKg,
-                'total_uang'    => (float) $totalUang,
-                'jumlah_setor'  => $jumlah,
+            'data' => [
+                'bulanan' => $rekapBulanan->map(fn ($r) => [
+                    'bulan'       => $r->bulan,
+                    'jumlah'      => (int) $r->jumlah,
+                    'total_kg'    => (float) $r->total_kg,
+                    'total_harga' => (float) $r->total_harga,
+                    'anomali'     => (int) $r->anomali,
+                ]),
+                'total' => [
+                    'total_kg'       => (float) ($totalAll->total_kg ?? 0),
+                    'total_harga'    => (float) ($totalAll->total_harga ?? 0),
+                    'jumlah_setor'   => (int)   ($totalAll->jumlah_setor ?? 0),
+                    'jumlah_anomali' => (int)   ($totalAll->jumlah_anomali ?? 0),
+                ],
             ],
-            'rekap_bulanan' => $rekapBulanan->map(fn ($r) => [
-                'bulan'       => $r->bulan,
-                'jumlah'      => (int) $r->jumlah,
-                'total_kg'    => (float) $r->total_kg,
-                'total_harga' => (float) $r->total_harga,
-            ]),
         ]);
     }
 }

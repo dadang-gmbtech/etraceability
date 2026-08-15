@@ -34,6 +34,11 @@ fun DashboardScreen(
     val namaFlow by viewModel.session.namaFlow.collectAsState(initial = null)
     var showLogoutDialog by remember { mutableStateOf(false) }
 
+    // Auto-redirect to login when session expired
+    LaunchedEffect(state.sessionExpired) {
+        if (state.sessionExpired) onLogout()
+    }
+
     val idr = NumberFormat.getNumberInstance(Locale("id", "ID"))
 
     if (showLogoutDialog) {
