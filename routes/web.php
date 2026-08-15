@@ -73,7 +73,7 @@ Route::get('/auth/logout', function (\Illuminate\Http\Request $request) {
     \Illuminate\Support\Facades\Auth::logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
-    return redirect()->route('filament.admin.auth.login');
+    return redirect('/admin');
 })->middleware('auth')->name('auth.logout');
 
 Route::get('/', function () {
