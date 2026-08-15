@@ -64,13 +64,13 @@ fun LoginScreen(
             }
             Spacer(Modifier.height(16.dp))
             Text(
-                "e-Traceability",
+                "Penderes",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = Gray800,
             )
             Text(
-                "Portal Petani",
+                "Portal Petani e-Traceability",
                 fontSize = 14.sp,
                 color = Gray600,
             )

@@ -2,6 +2,7 @@ package com.gmbtech.etraceability.data.api
 
 import com.gmbtech.etraceability.data.session.SessionManager
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -29,6 +30,7 @@ object ApiClient {
 
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
+            .protocols(listOf(Protocol.HTTP_1_1))
             .addInterceptor(loggingInterceptor)
             .addInterceptor { chain ->
                 val token = sessionManager?.getTokenSync()
