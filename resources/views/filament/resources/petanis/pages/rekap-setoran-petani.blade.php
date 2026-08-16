@@ -146,13 +146,17 @@ $produkLabel = ['gula_semut'=>'Gula Semut','raw_sugar'=>'Raw Sugar','nira'=>'Nir
                 </tr>
                 @endforeach
             </tbody>
-            <tfoot style="position:sticky;bottom:0;z-index:1;background:#f9fafb;">
-                <tr>
-                    <td class="font-semibold text-gray-600 dark:text-gray-300" colspan="2">
+            <tfoot style="position:sticky;bottom:0;z-index:1;">
+                <tr style="background:#fef3c7;border-top:2px solid #f59e0b;">
+                    <td style="padding:.6rem 1rem;font-size:.8125rem;font-weight:700;color:#111827;white-space:nowrap;" colspan="2">
                         Total ({{ $rekapHarian->count() }} setoran)
                     </td>
-                    <td class="text-right font-semibold">{{ number_format($rekapHarian->sum('berat_kg'), 2) }} kg</td>
-                    <td class="text-right font-semibold text-green-600">Rp {{ number_format($rekapHarian->sum('total_harga'), 0, ',', '.') }}</td>
+                    <td style="padding:.6rem 1rem;text-align:right;font-size:.8125rem;font-weight:700;color:#111827;white-space:nowrap;">
+                        {{ number_format($rekapHarian->sum('berat_kg'), 2) }} kg
+                    </td>
+                    <td style="padding:.6rem 1rem;text-align:right;font-size:.8125rem;font-weight:700;color:#065f46;white-space:nowrap;">
+                        Rp {{ number_format($rekapHarian->sum('total_harga'), 0, ',', '.') }}
+                    </td>
                     <td></td>
                 </tr>
             </tfoot>
