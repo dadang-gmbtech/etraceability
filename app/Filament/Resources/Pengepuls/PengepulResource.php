@@ -18,6 +18,9 @@ class PengepulResource extends Resource
 {
     protected static ?string $model = Pengepul::class;
 
+    protected static ?string $navigationLabel  = 'Pengepul';
+    protected static ?string $pluralModelLabel = 'Pengepul';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

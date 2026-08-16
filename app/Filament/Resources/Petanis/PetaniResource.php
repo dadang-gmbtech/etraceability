@@ -24,7 +24,8 @@ class PetaniResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'nama';
 
-    protected static ?string $navigationLabel = 'Data Petani';
+    protected static ?string $navigationLabel  = 'Data Petani';
+    protected static ?string $pluralModelLabel = 'Petani';
 
     public static function form(Schema $schema): Schema
     {
