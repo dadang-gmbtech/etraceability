@@ -2,12 +2,18 @@
 
 namespace App\Filament\Resources\SoilMeasurements;
 
+use App\Filament\Resources\SoilMeasurements\Pages\CreateSoilMeasurement;
+use App\Filament\Resources\SoilMeasurements\Pages\EditSoilMeasurement;
 use App\Filament\Resources\SoilMeasurements\Pages\ListSoilMeasurements;
+use App\Filament\Resources\SoilMeasurements\Schemas\SoilMeasurementForm;
 use App\Models\SoilMeasurement;
 use BackedEnum;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\EditAction;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -26,6 +32,11 @@ class SoilMeasurementResource extends Resource
     public static function getNavigationGroup(): ?string
     {
         return 'IoT & Monitoring';
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return SoilMeasurementForm::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -96,6 +107,11 @@ class SoilMeasurementResource extends Resource
                     ->searchable()
                     ->preload(),
             ])
+            ->recordAction('edit')
+            ->actions([
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
@@ -106,7 +122,9 @@ class SoilMeasurementResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListSoilMeasurements::route('/'),
+            'index'  => ListSoilMeasurements::route('/'),
+            'create' => CreateSoilMeasurement::route('/create'),
+            'edit'   => EditSoilMeasurement::route('/{record}/edit'),
         ];
     }
 }
