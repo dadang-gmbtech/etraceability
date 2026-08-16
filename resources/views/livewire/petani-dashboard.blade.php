@@ -54,7 +54,7 @@
             <div class="bg-white rounded-xl shadow p-5 border-l-4 border-purple-500">
                 <p class="text-xs text-gray-500 uppercase tracking-wide">Lahan Dikelola</p>
                 <p class="text-2xl font-bold text-gray-800 mt-1">{{ $lahans->count() }}</p>
-                <p class="text-xs text-gray-400">{{ $lahans->sum('kelapa_buah') }} pohon</p>
+                <p class="text-xs text-gray-400">{{ $lahans->sum('pohon_di_deres') }} pohon</p>
             </div>
         </div>
 
@@ -87,7 +87,7 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-3 font-medium text-gray-800">{{ $lahan->kode_lahan }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $lahan->pemilik ?? '-' }}</td>
-                                <td class="px-4 py-3 text-right font-medium">{{ number_format($lahan->kelapa_buah) }}</td>
+                                <td class="px-4 py-3 text-right font-medium">{{ number_format($lahan->pohon_di_deres) }}</td>
                                 <td class="px-4 py-3 text-center">
                                     <span class="px-2 py-0.5 rounded text-xs
                                         {{ $lahan->jenis_geometri === 'polygon' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700' }}">
@@ -100,7 +100,7 @@
                         <tfoot class="bg-gray-50 text-xs font-medium text-gray-600">
                             <tr>
                                 <td colspan="2" class="px-4 py-2">Total</td>
-                                <td class="px-4 py-2 text-right">{{ number_format($lahans->sum('kelapa_buah')) }} pohon</td>
+                                <td class="px-4 py-2 text-right">{{ number_format($lahans->sum('pohon_di_deres')) }} pohon</td>
                                 <td></td>
                             </tr>
                         </tfoot>

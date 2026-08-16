@@ -19,11 +19,11 @@
         // Lahan lain yang sudah ada koordinatnya
         $lahanLainData = \App\Models\Lahan::whereNotNull('koordinat')
             ->when($currentId, fn ($q) => $q->where('id', '!=', $currentId))
-            ->get(['kode_lahan', 'pemilik', 'kelapa_buah', 'koordinat'])
+            ->get(['kode_lahan', 'pemilik', 'pohon_di_deres', 'koordinat'])
             ->map(fn ($l) => [
                 'nama'         => $l->kode_lahan,
                 'pemilik'      => $l->pemilik ?? '',
-                'kelapa_buah' => $l->kelapa_buah,
+                'pohon_di_deres' => $l->pohon_di_deres,
                 'geom'         => is_array($l->koordinat) ? $l->koordinat : json_decode($l->koordinat, true),
             ])
             ->filter(fn ($l) => !empty($l['geom']['type']))
@@ -83,7 +83,7 @@
 
                         const popup = `<b>${lahan.nama}</b>`
                             + (lahan.pemilik ? `<br>Pemilik: ${lahan.pemilik}` : '')
-                            + `<br>${lahan.kelapa_buah} pohon`
+                            + `<br>${lahan.pohon_di_deres} pohon`
                             + `<br><small style='color:#b91c1c'>⚠️ Lahan sudah terdaftar</small>`;
 
                         const styleRef = {

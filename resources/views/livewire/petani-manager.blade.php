@@ -51,7 +51,7 @@
                             {{ $petani->lahans_count }}
                         </td>
                         <td class="px-4 py-3 text-center font-semibold text-green-700">
-                            {{ $petani->lahans()->sum('kelapa_buah') }}
+                            {{ $petani->lahans()->sum('pohon_di_deres') }}
                         </td>
                         <td class="px-4 py-3 text-center">
                             @if ($petani->aktif)

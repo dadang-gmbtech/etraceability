@@ -214,7 +214,7 @@
             const popup = `<b>@js($lahan->kode_lahan)</b>`
                 + `<br>Petani: @js($lahan->petani?->nama ?? '—')`
                 + `<br>Pemilik: @js($lahan->pemilik ?? '—')`
-                + `<br>{{ $lahan->kelapa_buah }} pohon kelapa`;
+                + `<br>{{ $lahan->pohon_di_deres }} pohon kelapa`;
 
             L.geoJSON(geom, {
                 style: { color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35, weight: 2 },
