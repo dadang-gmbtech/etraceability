@@ -18,6 +18,9 @@ class SertifikasiOrganikResource extends Resource
 {
     protected static ?string $model = SertifikasiOrganik::class;
 
+    protected static ?string $navigationLabel    = 'Sertifikasi Organik';
+    protected static ?string $pluralModelLabel   = 'Sertifikasi Organik';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

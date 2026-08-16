@@ -20,7 +20,8 @@ class SetoranGulaResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;
 
-    protected static ?string $navigationLabel = 'Setoran Produk';
+    protected static ?string $navigationLabel  = 'Setoran Produk';
+    protected static ?string $pluralModelLabel = 'Setoran Gula';
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema

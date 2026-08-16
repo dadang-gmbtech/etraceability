@@ -18,6 +18,9 @@ class BatchProduksiResource extends Resource
 {
     protected static ?string $model = BatchProduksi::class;
 
+    protected static ?string $navigationLabel    = 'Batch Produksi';
+    protected static ?string $pluralModelLabel   = 'Batch Produksi';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema
