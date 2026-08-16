@@ -53,13 +53,15 @@ Route::prefix('portal')->name('portal.')->group(function () {
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('google.login');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
 
-// --- Dashboard internal (sementara tanpa auth untuk kemudahan ujicoba) ---
-Route::group([], function () {
-    Route::get('/petani', PetaniManager::class)->name('petani.index');
-    Route::get('/batch-produksi', BatchProduksiManager::class)->name('batch.index');
+// --- Halaman yang membutuhkan login ---
+Route::middleware(['auth'])->group(function () {
     Route::get('/peta-sebaran', PetaSebaran::class)->name('peta.sebaran');
-    Route::get('/rute-distribusi', RuteDistribusiManager::class)->name('rute.index');
+    Route::get('/petani', PetaniManager::class)->name('petani.index');
 });
+
+// --- Halaman publik (tanpa login) ---
+Route::get('/batch-produksi', BatchProduksiManager::class)->name('batch.index');
+Route::get('/rute-distribusi', RuteDistribusiManager::class)->name('rute.index');
 
 // --- Dashboard per role ---
 Route::middleware(['auth'])->group(function () {
