@@ -29,7 +29,7 @@ class PetaSebaran extends Component
             'statistik' => [
                 'total_petani'   => Petani::where('aktif', true)->count(),
                 'total_lahan'    => $lahans->count(),
-                'total_pohon'    => $lahans->sum('kelapa_buah'),
+                'total_pohon'    => $lahans->sum('pohon_di_deres'),
                 'total_pengepul' => $pengepul->count(),
                 'total_batch'    => BatchProduksi::count(),
                 'total_device'   => Device::count(),

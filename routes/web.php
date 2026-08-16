@@ -73,7 +73,7 @@ Route::get('/auth/logout', function (\Illuminate\Http\Request $request) {
     \Illuminate\Support\Facades\Auth::logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
-    return redirect(config('app.url') . '/admin/login');
+    return redirect()->route('peta.sebaran');
 })->name('auth.logout');
 
 Route::get('/', function () {
