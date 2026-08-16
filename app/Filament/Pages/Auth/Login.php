@@ -3,7 +3,6 @@
 namespace App\Filament\Pages\Auth;
 
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
-use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
@@ -43,13 +42,13 @@ class Login extends BaseLogin
             ->required();
     }
 
-    public function authenticate(): ?LoginResponse
+    public function authenticate(): void
     {
         try {
             $this->rateLimit(5);
         } catch (TooManyRequestsException $exception) {
             $this->getRateLimitedNotification($exception)?->send();
-            return null;
+            return;
         }
 
         $data        = $this->form->getState();
@@ -81,6 +80,8 @@ class Login extends BaseLogin
 
         session()->regenerate();
 
-        return app(LoginResponse::class);
+        $intended = session()->pull('url.intended', route('filament.admin.pages.dashboard'));
+
+        $this->redirect($intended, navigate: false);
     }
 }
