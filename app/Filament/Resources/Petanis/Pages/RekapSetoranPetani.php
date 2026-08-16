@@ -64,15 +64,14 @@ class RekapSetoranPetani extends Page implements HasTable
         ];
     }
 
-    // ── Rekap per hari (30 hari terakhir) ────────────────────────────────
+    // ── Setoran individual (30 hari terakhir) ────────────────────────────
     public function getRekapHarian(): \Illuminate\Support\Collection
     {
         return SetoranGula::where('petani_id', $this->record->id)
             ->where('tanggal_setor', '>=', now()->subDays(30))
-            ->selectRaw("DATE(tanggal_setor) as tanggal, COUNT(*) as jumlah, SUM(berat_kg) as total_kg, SUM(total_harga) as total_harga, COUNT(CASE WHEN is_anomali THEN 1 END) as anomali")
-            ->groupByRaw("DATE(tanggal_setor)")
-            ->orderByRaw("DATE(tanggal_setor) DESC")
-            ->get();
+            ->orderByDesc('tanggal_setor')
+            ->orderByDesc('id')
+            ->get(['id', 'tanggal_setor', 'jenis_produk', 'berat_kg', 'total_harga', 'is_anomali']);
     }
 
     // ── Data grafik (60 hari terakhir, per jenis produk) ─────────────────

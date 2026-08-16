@@ -98,40 +98,47 @@ table.rekap-tbl tr:hover td{background:#f9fafb}
     </div>
 </div>
 
-{{-- ═══ REKAP HARIAN ═══ --}}
+{{-- ═══ RIWAYAT SETORAN ═══ --}}
+@php
+$produkLabel = ['gula_semut'=>'Gula Semut','raw_sugar'=>'Raw Sugar','nira'=>'Nira','gula_cair'=>'Gula Cair'];
+@endphp
 <div class="rekap-card">
     <div class="rekap-card-head">
-        <h3>Rekap Setoran Per Hari <span class="badge">30 Hari Terakhir</span></h3>
-        <span class="text-xs text-gray-400">{{ $rekapHarian->count() }} hari aktif</span>
+        <h3>Riwayat Setoran <span class="badge">30 Hari Terakhir</span></h3>
+        <span class="text-xs text-gray-400">{{ $rekapHarian->count() }} setoran</span>
     </div>
     @if($rekapHarian->isEmpty())
         <p class="text-sm text-gray-400 px-5 py-4">Belum ada setoran dalam 30 hari terakhir.</p>
     @else
-    <div class="overflow-x-auto" style="max-height:340px;overflow-y:auto">
+    <div class="overflow-x-auto" style="max-height:380px;overflow-y:auto">
         <table class="rekap-tbl">
             <thead style="position:sticky;top:0;z-index:1">
                 <tr>
                     <th>Tanggal</th>
-                    <th class="text-right">Jumlah Setor</th>
-                    <th class="text-right">Total (kg)</th>
+                    <th>Produk</th>
+                    <th class="text-right">Berat (kg)</th>
                     <th class="text-right">Hasil Penjualan</th>
                     <th class="text-center">Status</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($rekapHarian as $r)
-                <tr>
+                <tr class="{{ $r->is_anomali ? 'bg-red-50 dark:bg-red-900/10' : '' }}">
                     <td class="font-medium text-gray-800 dark:text-gray-200">
-                        {{ \Carbon\Carbon::parse($r->tanggal)->translatedFormat('l, d F Y') }}
+                        {{ \Carbon\Carbon::parse($r->tanggal_setor)->translatedFormat('l, d F Y') }}
                     </td>
-                    <td class="text-right text-gray-600 dark:text-gray-300">{{ $r->jumlah }}×</td>
-                    <td class="text-right font-semibold text-gray-800 dark:text-gray-200">{{ number_format($r->total_kg, 2) }} kg</td>
+                    <td class="text-gray-600 dark:text-gray-300">
+                        {{ $produkLabel[$r->jenis_produk] ?? ($r->jenis_produk ?? 'Gula Semut') }}
+                    </td>
+                    <td class="text-right font-semibold text-gray-800 dark:text-gray-200">
+                        {{ number_format($r->berat_kg, 2) }} kg
+                    </td>
                     <td class="text-right font-semibold text-green-600 dark:text-green-400">
                         Rp {{ number_format($r->total_harga, 0, ',', '.') }}
                     </td>
                     <td class="text-center">
-                        @if($r->anomali > 0)
-                            <span class="anomali-badge bg-red-100 text-red-700">⚠ {{ $r->anomali }} anomali</span>
+                        @if($r->is_anomali)
+                            <span class="anomali-badge bg-red-100 text-red-700">⚠ Anomali</span>
                         @else
                             <span class="anomali-badge bg-green-100 text-green-700">✓ Normal</span>
                         @endif
@@ -141,9 +148,10 @@ table.rekap-tbl tr:hover td{background:#f9fafb}
             </tbody>
             <tfoot style="position:sticky;bottom:0;z-index:1;background:#f9fafb;">
                 <tr>
-                    <td class="font-semibold text-gray-600 dark:text-gray-300">Total</td>
-                    <td class="text-right font-semibold">{{ $rekapHarian->sum('jumlah') }}×</td>
-                    <td class="text-right font-semibold">{{ number_format($rekapHarian->sum('total_kg'), 2) }} kg</td>
+                    <td class="font-semibold text-gray-600 dark:text-gray-300" colspan="2">
+                        Total ({{ $rekapHarian->count() }} setoran)
+                    </td>
+                    <td class="text-right font-semibold">{{ number_format($rekapHarian->sum('berat_kg'), 2) }} kg</td>
                     <td class="text-right font-semibold text-green-600">Rp {{ number_format($rekapHarian->sum('total_harga'), 0, ',', '.') }}</td>
                     <td></td>
                 </tr>
