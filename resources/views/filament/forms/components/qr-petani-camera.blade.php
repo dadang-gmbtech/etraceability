@@ -1,3 +1,86 @@
+{{--
+    Global hardware QR scanner listener.
+    USB scanner = HID keyboard emulator: mengetik karakter sangat cepat (< 30ms antar karakter) + Enter di akhir.
+    Listener ini mendeteksi pola tersebut dari manapun di halaman, lalu mengirim ke field scan.
+--}}
+<div
+    x-data="{
+        buf: '',
+        lastChar: '',
+        lastT: 0,
+        scanMode: false,
+        scanTimer: null,
+        scanReady: true,
+
+        init() {
+            window.addEventListener('keydown', (e) => this.onKey(e), true);
+        },
+
+        onKey(e) {
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+            const scanField = document.getElementById('hardware-scan-input');
+
+            /* Jika field scan sedang fokus, biarkan field itu menangani sendiri lewat wire:model */
+            if (scanField && document.activeElement === scanField) return;
+
+            if (e.key === 'Enter') {
+                const code = (this.lastChar + this.buf).trim();
+                if (this.scanMode && code.length >= 3) {
+                    this.buf = ''; this.lastChar = ''; this.scanMode = false;
+                    clearTimeout(this.scanTimer);
+                    $wire.set('data.kode_qr_scan', code);
+                    e.preventDefault(); e.stopPropagation();
+                } else {
+                    this.buf = ''; this.lastChar = ''; this.scanMode = false;
+                }
+                return;
+            }
+
+            if (e.key.length !== 1) return;
+
+            const now = Date.now();
+            const gap = now - this.lastT;
+            this.lastT = now;
+
+            if (this.scanMode) {
+                /* Sudah dalam mode scanner — tangkap semua karakter */
+                this.buf += e.key;
+                e.preventDefault(); e.stopPropagation();
+            } else if (gap < 30 && this.lastChar !== '') {
+                /*
+                 * Karakter kedua tiba sangat cepat setelah pertama → ini scanner.
+                 * Karakter pertama (lastChar) sudah terlanjur masuk ke elemen fokus,
+                 * kita coba hapus dari elemen tersebut.
+                 */
+                this.scanMode = true;
+                this.buf = e.key;
+                const active = document.activeElement;
+                if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && active.id !== 'hardware-scan-input') {
+                    /* Hapus 1 karakter terakhir yang masuk dari scanner */
+                    const v = active.value;
+                    active.value = v.length > 0 ? v.slice(0, -1) : v;
+                    active.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                e.preventDefault(); e.stopPropagation();
+            } else {
+                /* Ketik normal (manusia) — simpan karakter terakhir sebagai referensi */
+                this.lastChar = e.key;
+                this.buf = '';
+            }
+
+            if (this.scanMode) {
+                clearTimeout(this.scanTimer);
+                this.scanTimer = setTimeout(() => {
+                    this.buf = ''; this.lastChar = ''; this.scanMode = false;
+                }, 300);
+            }
+        }
+    }"
+    x-init="init()"
+></div>
+
+{{-- Tombol kamera + indikator scanner --}}
 <div
     x-data="{
         scanning: false,
@@ -47,19 +130,31 @@
     }"
     x-on:keydown.escape.window="stop()"
 >
-    <button
-        type="button"
-        x-on:click="start()"
-        class="fi-btn fi-btn-size-md relative inline-grid grid-flow-col items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold shadow-sm outline-none ring-1 transition duration-75 bg-white text-gray-950 hover:bg-gray-50 ring-gray-950/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 dark:ring-white/20"
-    >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px;height:18px;flex-shrink:0;">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-        </svg>
-        <span>Buka Kamera</span>
-    </button>
+    <div class="flex items-center gap-2 flex-wrap">
+        <button
+            type="button"
+            x-on:click="start()"
+            class="fi-btn fi-btn-size-md relative inline-grid grid-flow-col items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold shadow-sm outline-none ring-1 transition duration-75 bg-white text-gray-950 hover:bg-gray-50 ring-gray-950/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 dark:ring-white/20"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px;height:18px;flex-shrink:0;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+            </svg>
+            <span>Buka Kamera</span>
+        </button>
+
+        {{-- Indikator scanner hardware siap --}}
+        <span
+            class="inline-flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500"
+            title="USB QR scanner terdeteksi otomatis — scan dari manapun di halaman ini"
+        >
+            <span style="width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block;flex-shrink:0;"></span>
+            Scanner siap
+        </span>
+    </div>
     <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-        Scan QR Code petani dengan kamera HP/laptop
+        Kamera: scan via HP/laptop &nbsp;·&nbsp;
+        Hardware scanner: scan langsung dari halaman ini
     </p>
 
     {{-- Overlay kamera --}}

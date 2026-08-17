@@ -29,10 +29,16 @@ class SetoranGulaForm
                         Grid::make(['default' => 1, 'md' => 2])->schema([
                             TextInput::make('kode_qr_scan')
                                 ->label('Scan QR / Kode Petani')
-                                ->placeholder('Arahkan scanner hardware atau ketik kode petani...')
-                                ->helperText('Hardware QR scanner: scan langsung, otomatis terisi. Atau klik "Buka Kamera" untuk scan via kamera.')
-                                ->live(debounce: 600)
+                                ->placeholder('Arahkan scanner hardware ke sini, atau ketik kode petani...')
+                                ->helperText('Hardware QR scanner: klik field ini → scan. Atau gunakan "Buka Kamera".')
+                                ->live(debounce: 300)
                                 ->dehydrated(false)
+                                ->extraAttributes([
+                                    'id'                         => 'hardware-scan-input',
+                                    'x-on:keydown.enter.prevent' => '$wire.set("data.kode_qr_scan", $el.value)',
+                                    'autocomplete'               => 'off',
+                                    'spellcheck'                 => 'false',
+                                ])
                                 ->afterStateUpdated(function ($state, $set) {
                                     if (empty(trim((string) $state))) return;
                                     $kode   = strtoupper(trim((string) $state));
