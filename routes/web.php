@@ -78,9 +78,6 @@ Route::get('/auth/logout', function (\Illuminate\Http\Request $request) {
     return redirect()->route('peta.sebaran');
 })->name('auth.logout');
 
-// Semua user (admin, petani, pengepul, kub) masuk lewat satu halaman login Filament
-Route::get('/login', fn () => redirect()->to('/admin/login'))->name('login');
-
 Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('peta.sebaran');
