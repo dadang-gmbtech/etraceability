@@ -13,26 +13,35 @@
         scanReady: true,
 
         init() {
-            window.addEventListener('keydown', (e) => this.onKey(e), true);
+            window.addEventListener('keydown', (e) => this.onKey(e));
         },
 
         onKey(e) {
             if (e.ctrlKey || e.altKey || e.metaKey) return;
 
+            const active = document.activeElement;
             const scanField = document.getElementById('hardware-scan-input');
 
-            /* Jika field scan sedang fokus, biarkan field itu menangani sendiri lewat wire:model */
-            if (scanField && document.activeElement === scanField) return;
+            /*
+             * Jika ada input/textarea yang sedang fokus → jangan ganggu.
+             * Field scan sendiri ditangani via wire:model.live + Enter handler.
+             */
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) {
+                return;
+            }
 
+            /* Hanya aktif ketika tidak ada input yang fokus (halaman baru dibuka, dsb.) */
             if (e.key === 'Enter') {
-                const code = (this.lastChar + this.buf).trim();
-                if (this.scanMode && code.length >= 3) {
-                    this.buf = ''; this.lastChar = ''; this.scanMode = false;
+                const code = this.buf.trim();
+                if (code.length >= 3) {
+                    this.buf = ''; this.scanMode = false;
                     clearTimeout(this.scanTimer);
                     $wire.set('data.kode_qr_scan', code);
-                    e.preventDefault(); e.stopPropagation();
+                    /* Fokuskan field scan supaya scanner berikutnya langsung masuk */
+                    if (scanField) setTimeout(() => scanField.focus(), 100);
+                    e.preventDefault();
                 } else {
-                    this.buf = ''; this.lastChar = ''; this.scanMode = false;
+                    this.buf = ''; this.scanMode = false;
                 }
                 return;
             }
@@ -43,37 +52,15 @@
             const gap = now - this.lastT;
             this.lastT = now;
 
-            if (this.scanMode) {
-                /* Sudah dalam mode scanner — tangkap semua karakter */
+            if (this.scanMode || gap < 50) {
                 this.buf += e.key;
-                e.preventDefault(); e.stopPropagation();
-            } else if (gap < 30 && this.lastChar !== '') {
-                /*
-                 * Karakter kedua tiba sangat cepat setelah pertama → ini scanner.
-                 * Karakter pertama (lastChar) sudah terlanjur masuk ke elemen fokus,
-                 * kita coba hapus dari elemen tersebut.
-                 */
                 this.scanMode = true;
-                this.buf = e.key;
-                const active = document.activeElement;
-                if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && active.id !== 'hardware-scan-input') {
-                    /* Hapus 1 karakter terakhir yang masuk dari scanner */
-                    const v = active.value;
-                    active.value = v.length > 0 ? v.slice(0, -1) : v;
-                    active.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-                e.preventDefault(); e.stopPropagation();
-            } else {
-                /* Ketik normal (manusia) — simpan karakter terakhir sebagai referensi */
-                this.lastChar = e.key;
-                this.buf = '';
-            }
-
-            if (this.scanMode) {
                 clearTimeout(this.scanTimer);
                 this.scanTimer = setTimeout(() => {
-                    this.buf = ''; this.lastChar = ''; this.scanMode = false;
+                    this.buf = ''; this.scanMode = false;
                 }, 300);
+            } else {
+                this.buf = e.key;
             }
         }
     }"
