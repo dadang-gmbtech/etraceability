@@ -71,6 +71,18 @@ class AdminPanelProvider extends PanelProvider
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
                     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
                     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+                    <script>
+                        document.addEventListener("livewire:init", function () {
+                            Livewire.hook("request", ({ fail }) => {
+                                fail(({ status, preventDefault }) => {
+                                    if (status === 419) {
+                                        preventDefault();
+                                        window.location.reload();
+                                    }
+                                });
+                            });
+                        });
+                    </script>
                 ')
             )
             ;
