@@ -58,6 +58,10 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->renderHook(
+                'panels::auth.login.form.after',
+                fn (): \Illuminate\View\View => view('filament.auth.google-login-button'),
+            )
+            ->renderHook(
                 'panels::head.end',
                 fn (): HtmlString => new HtmlString('
                     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
