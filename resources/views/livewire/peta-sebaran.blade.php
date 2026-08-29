@@ -32,11 +32,24 @@
     </div>
 
     {{-- Layer Toggle & Legenda --}}
+    @php
+        $persilCount   = $lahans->filter(fn($l) => str_contains(strtolower($l->jenis_geometri ?? ''), 'polygon'))->count();
+        $koordinatCount = $lahans->count() - $persilCount;
+    @endphp
     <div class="flex flex-wrap items-center gap-3 mb-3">
         <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tampilkan layer:</span>
 
         <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm">
-            <input type="checkbox" id="toggle-lahan" checked onchange="toggleLayer('lahan', this.checked)"
+            <input type="checkbox" id="toggle-persil" checked onchange="toggleLayer('persil', this.checked)"
+                   class="rounded text-blue-500 focus:ring-blue-400">
+            <svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="12" height="12" rx="1" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2"/>
+            </svg>
+            Persil/Lahan ({{ $persilCount }})
+        </label>
+
+        <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm">
+            <input type="checkbox" id="toggle-koordinat" checked onchange="toggleLayer('koordinat', this.checked)"
                    class="rounded text-emerald-500 focus:ring-emerald-400">
             <svg width="14" height="18" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 1C9.92 1 5 5.92 5 12c0 9 11 27 11 27S27 21 27 12c0-6.08-4.92-11-11-11z" fill="#16a34a" stroke="#14532d" stroke-width="1"/>
@@ -46,7 +59,7 @@
                 <ellipse cx="18" cy="11" rx="3" ry="1.5" fill="#16a34a" transform="rotate(20 18 11)"/>
                 <ellipse cx="16" cy="9.5" rx="3" ry="1.5" fill="#16a34a"/>
             </svg>
-            Lahan ({{ $lahans->count() }})
+            Koordinat Lahan ({{ $koordinatCount }})
         </label>
 
         <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm">
@@ -147,7 +160,8 @@
 @script
 <script>
     const layers = {
-        lahan:      L.layerGroup(),
+        persil:     L.layerGroup(),
+        koordinat:  L.layerGroup(),
         pengepul:   L.layerGroup(),
         iot:        L.layerGroup(),
         kecamatan:  L.layerGroup(),
@@ -160,8 +174,7 @@
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // lahan, pengepul, iot are visible by default; kecamatan & desa are hidden
-    ['lahan', 'pengepul', 'iot'].forEach(name => layers[name].addTo(map));
+    ['persil', 'koordinat', 'pengepul', 'iot'].forEach(name => layers[name].addTo(map));
 
     window.toggleLayer = function(name, show) {
         show ? layers[name].addTo(map) : map.removeLayer(layers[name]);
@@ -227,15 +240,17 @@
 
     const allPoints = [];
 
-    // ── Layer Lahan ──────────────────────────────────────────────────────────
+    // ── Layer Persil (polygon) & Koordinat (titik) ──────────────────────────
     @foreach ($lahans as $lahan)
         @php
             $geom = $lahan->koordinat;
             if (is_string($geom)) { $geom = json_decode($geom, true); }
+            $isPolygon = str_contains(strtolower($geom['type'] ?? ''), 'polygon');
         @endphp
         @if ($geom && isset($geom['type']))
         (function() {
             const geom = @json($geom);
+            const isPolygon = @json($isPolygon);
             const popup = `<b>@js($lahan->kode_lahan)</b>`
                 + `<br>Petani: @js($lahan->petani?->nama ?? '—')`
                 + `<br>Pemilik: @js($lahan->pemilik ?? '—')`
@@ -248,7 +263,7 @@
                     layer.bindPopup(popup);
                 }
             }).eachLayer(layer => {
-                layers.lahan.addLayer(layer);
+                (isPolygon ? layers.persil : layers.koordinat).addLayer(layer);
                 try {
                     if (layer.getBounds) {
                         const b = layer.getBounds();
