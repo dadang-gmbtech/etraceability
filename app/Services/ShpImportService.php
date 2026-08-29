@@ -64,35 +64,15 @@ class ShpImportService
 
     private function processShpFile(string $shpFile, array $defaults, array &$result): void
     {
-        // Try with DBF_FORCE_READING first, then fallback options
-        $optionSets = [
-            [
+        try {
+            $reader = new ShapefileReader($shpFile, [
                 Shapefile::OPTION_ENFORCE_POLYGON_CLOSED_RINGS => true,
                 Shapefile::OPTION_FORCE_MULTIPART_GEOMETRIES   => false,
                 Shapefile::OPTION_SUPPRESS_M                   => true,
                 Shapefile::OPTION_SUPPRESS_Z                   => true,
-                Shapefile::OPTION_DBF_FORCE_READING            => true,
-            ],
-            [
-                Shapefile::OPTION_ENFORCE_POLYGON_CLOSED_RINGS => true,
-                Shapefile::OPTION_FORCE_MULTIPART_GEOMETRIES   => false,
-                Shapefile::OPTION_SUPPRESS_M                   => true,
-                Shapefile::OPTION_SUPPRESS_Z                   => true,
-            ],
-        ];
-
-        $reader    = null;
-        $lastError = null;
-        foreach ($optionSets as $opts) {
-            try {
-                $reader = new ShapefileReader($shpFile, $opts);
-                break;
-            } catch (\Throwable $e) {
-                $lastError = $e;
-            }
-        }
-        if ($reader === null) {
-            $result['errors'][] = 'Gagal membuka SHP: ' . $lastError->getMessage();
+            ]);
+        } catch (\Throwable $e) {
+            $result['errors'][] = 'Gagal membuka SHP: ' . $e->getMessage();
             return;
         }
 
