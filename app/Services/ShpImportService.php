@@ -64,32 +64,60 @@ class ShpImportService
 
     private function processShpFile(string $shpFile, array $defaults, array &$result): void
     {
-        try {
-            $reader = new ShapefileReader($shpFile, [
+        // Try with DBF_FORCE_READING first, then fallback options
+        $optionSets = [
+            [
                 Shapefile::OPTION_ENFORCE_POLYGON_CLOSED_RINGS => true,
                 Shapefile::OPTION_FORCE_MULTIPART_GEOMETRIES   => false,
                 Shapefile::OPTION_SUPPRESS_M                   => true,
                 Shapefile::OPTION_SUPPRESS_Z                   => true,
-            ]);
+                Shapefile::OPTION_DBF_FORCE_READING            => true,
+            ],
+            [
+                Shapefile::OPTION_ENFORCE_POLYGON_CLOSED_RINGS => true,
+                Shapefile::OPTION_FORCE_MULTIPART_GEOMETRIES   => false,
+                Shapefile::OPTION_SUPPRESS_M                   => true,
+                Shapefile::OPTION_SUPPRESS_Z                   => true,
+            ],
+        ];
 
-            foreach ($reader as $record) {
-                if ($record->isEmpty()) {
+        $reader    = null;
+        $lastError = null;
+        foreach ($optionSets as $opts) {
+            try {
+                $reader = new ShapefileReader($shpFile, $opts);
+                break;
+            } catch (\Throwable $e) {
+                $lastError = $e;
+            }
+        }
+        if ($reader === null) {
+            $result['errors'][] = 'Gagal membuka SHP: ' . $lastError->getMessage();
+            return;
+        }
+
+        foreach ($reader as $record) {
+            if ($record->isEmpty()) {
+                $result['skipped']++;
+                continue;
+            }
+
+            try {
+                $geojson = json_decode($record->getGeoJSON(), true);
+
+                // Validasi koordinat (WGS84 check)
+                if (! $this->isWgs84($geojson)) {
+                    $result['errors'][] = 'Koordinat bukan WGS84 (derajat). Harap konversi ke sistem koordinat WGS84 sebelum import.';
                     $result['skipped']++;
                     continue;
                 }
 
+                // Ambil atribut dari .dbf; jika charset gagal, lanjut dengan array kosong
                 try {
-                    $geojson = json_decode($record->getGeoJSON(), true);
-
-                    // Validasi koordinat (WGS84 check)
-                    if (! $this->isWgs84($geojson)) {
-                        $result['errors'][] = 'Koordinat bukan WGS84 (derajat). Harap konversi ke sistem koordinat WGS84 sebelum import.';
-                        $result['skipped']++;
-                        continue;
-                    }
-
-                    // Ambil atribut dari .dbf
                     $dbf = $record->getDataArray();
+                } catch (\Throwable $e) {
+                    $dbf = [];
+                }
 
                     $kodeLahan = $this->extractAttr($dbf, ['kode_lahan', 'kode', 'id_lahan', 'fid'])
                         ?? $this->generateKodeLahan();
@@ -135,10 +163,6 @@ class ShpImportService
                     $result['errors'][] = 'Record gagal: ' . $e->getMessage();
                     $result['skipped']++;
                 }
-            }
-
-        } catch (\Throwable $e) {
-            $result['errors'][] = 'Gagal membaca SHP: ' . $e->getMessage();
         }
     }
 

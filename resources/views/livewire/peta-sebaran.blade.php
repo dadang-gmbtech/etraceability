@@ -73,6 +73,24 @@
             </svg>
             Perangkat IoT ({{ $devices->count() }})
         </label>
+
+        <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm">
+            <input type="checkbox" id="toggle-kecamatan" onchange="toggleLayer('kecamatan', this.checked)"
+                   class="rounded text-blue-700 focus:ring-blue-600">
+            <svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="12" height="12" rx="1" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+            </svg>
+            Kecamatan ({{ $kecamatans->count() }})
+        </label>
+
+        <label class="flex items-center gap-1.5 cursor-pointer select-none text-sm">
+            <input type="checkbox" id="toggle-desa" onchange="toggleLayer('desa', this.checked)"
+                   class="rounded text-purple-700 focus:ring-purple-600">
+            <svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="12" height="12" rx="1" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="3,1"/>
+            </svg>
+            Desa ({{ $desas->count() }})
+        </label>
     </div>
 
     {{-- Peta --}}
@@ -128,7 +146,13 @@
 
 @script
 <script>
-    const layers = { lahan: L.layerGroup(), pengepul: L.layerGroup(), iot: L.layerGroup() };
+    const layers = {
+        lahan:      L.layerGroup(),
+        pengepul:   L.layerGroup(),
+        iot:        L.layerGroup(),
+        kecamatan:  L.layerGroup(),
+        desa:       L.layerGroup(),
+    };
 
     const map = L.map('map-sebaran').setView([-7.7956, 110.3695], 11);
 
@@ -136,7 +160,8 @@
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    Object.values(layers).forEach(lg => lg.addTo(map));
+    // lahan, pengepul, iot are visible by default; kecamatan & desa are hidden
+    ['lahan', 'pengepul', 'iot'].forEach(name => layers[name].addTo(map));
 
     window.toggleLayer = function(name, show) {
         show ? layers[name].addTo(map) : map.removeLayer(layers[name]);
@@ -278,6 +303,44 @@
             layers.iot.addLayer(m);
             allPoints.push([lat, lng]);
         })();
+    @endforeach
+
+    // ── Layer Kecamatan ──────────────────────────────────────────────────────
+    @foreach ($kecamatans as $k)
+        @php
+            $geomK = $k->koordinat;
+            if (is_string($geomK)) { $geomK = json_decode($geomK, true); }
+        @endphp
+        @if ($geomK && isset($geomK['type']))
+        (function() {
+            const geom = @json($geomK);
+            L.geoJSON(geom, {
+                style: { color: '#1d4ed8', fillColor: '#3b82f6', fillOpacity: 0.05, weight: 2 },
+                onEachFeature: (f, layer) => {
+                    layer.bindPopup('<b>Kecamatan:</b> @js($k->nama)' + (@js($k->kode) ? '<br>Kode: @js($k->kode)' : ''));
+                }
+            }).eachLayer(layer => layers.kecamatan.addLayer(layer));
+        })();
+        @endif
+    @endforeach
+
+    // ── Layer Desa ───────────────────────────────────────────────────────────
+    @foreach ($desas as $d)
+        @php
+            $geomD = $d->koordinat;
+            if (is_string($geomD)) { $geomD = json_decode($geomD, true); }
+        @endphp
+        @if ($geomD && isset($geomD['type']))
+        (function() {
+            const geom = @json($geomD);
+            L.geoJSON(geom, {
+                style: { color: '#7c3aed', fillColor: '#8b5cf6', fillOpacity: 0.05, weight: 1.5 },
+                onEachFeature: (f, layer) => {
+                    layer.bindPopup('<b>Desa/Kel:</b> @js($d->nama)' + (@js($d->kode) ? '<br>Kode: @js($d->kode)' : ''));
+                }
+            }).eachLayer(layer => layers.desa.addLayer(layer));
+        })();
+        @endif
     @endforeach
 
     if (allPoints.length > 0) {

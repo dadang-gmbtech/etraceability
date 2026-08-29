@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\BatchProduksi;
+use App\Models\BatasWilayah;
 use App\Models\Device;
 use App\Models\Lahan;
 use App\Models\Petani;
@@ -15,17 +16,21 @@ class PetaSebaran extends Component
 {
     public function render()
     {
-        $lahans   = Lahan::with('petani')->get();
-        $pengepul = Pengepul::all();
-        $devices  = Device::with(['lahan.petani', 'soilMeasurements' => fn ($q) => $q->latest()->limit(1)])
+        $lahans     = Lahan::with('petani')->get();
+        $pengepul   = Pengepul::all();
+        $devices    = Device::with(['lahan.petani', 'soilMeasurements' => fn ($q) => $q->latest()->limit(1)])
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->get();
+        $kecamatans = BatasWilayah::where('jenis', 'kecamatan')->get(['id', 'nama', 'kode', 'koordinat']);
+        $desas      = BatasWilayah::where('jenis', 'desa')->get(['id', 'nama', 'kode', 'koordinat']);
 
         return view('livewire.peta-sebaran', [
-            'lahans'    => $lahans,
-            'pengepul'  => $pengepul,
-            'devices'   => $devices,
+            'lahans'      => $lahans,
+            'pengepul'    => $pengepul,
+            'devices'     => $devices,
+            'kecamatans'  => $kecamatans,
+            'desas'       => $desas,
             'statistik' => [
                 'total_petani'   => Petani::where('aktif', true)->count(),
                 'total_lahan'    => $lahans->count(),
