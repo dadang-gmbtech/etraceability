@@ -32,12 +32,14 @@ class PetaSebaranWidget extends Widget
             if (is_string($geom)) {
                 $geom = json_decode($geom, true);
             }
+            $isPolygon = str_contains(strtolower($geom['type'] ?? ''), 'polygon');
             return [
-                'kode'    => $l->kode_lahan ?? '—',
-                'petani'  => $l->petani?->nama ?? '—',
-                'pemilik' => $l->pemilik ?? '—',
-                'buah'    => (int) ($l->kelapa_buah ?? 0),
-                'geom'    => $geom,
+                'kode'      => $l->kode_lahan ?? '—',
+                'petani'    => $l->petani?->nama ?? '—',
+                'pemilik'   => $l->pemilik ?? '—',
+                'buah'      => (int) ($l->kelapa_buah ?? 0),
+                'geom'      => $geom,
+                'isPolygon' => $isPolygon,
             ];
         })->filter(fn ($l) => !empty($l['geom']))->values();
 
@@ -81,6 +83,8 @@ class PetaSebaranWidget extends Widget
             'statistik'   => [
                 'total_petani'   => Petani::where('aktif', true)->count(),
                 'total_lahan'    => $lahans->count(),
+                'total_persil'   => $lahanGeo->where('isPolygon', true)->count(),
+                'total_koordinat'=> $lahanGeo->where('isPolygon', false)->count(),
                 'total_pohon'    => (int) $lahans->sum('pohon_di_deres'),
                 'total_pengepul' => $totalPengepul,
                 'total_batch'    => BatchProduksi::count(),

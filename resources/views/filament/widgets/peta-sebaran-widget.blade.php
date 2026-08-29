@@ -58,9 +58,14 @@
         <div class="adm-layer-row">
             <span class="ttl">Tampilkan Layer:</span>
             <label>
-                <input type="checkbox" checked onchange="admToggleLayer('lahan',this.checked)">
+                <input type="checkbox" checked onchange="admToggleLayer('persil',this.checked)">
+                <span class="adm-dot" style="background:#93c5fd;border:2px solid #1d4ed8;"></span>
+                Persil/Lahan ({{ $statistik['total_persil'] }})
+            </label>
+            <label>
+                <input type="checkbox" checked onchange="admToggleLayer('koordinat',this.checked)">
                 <span class="adm-dot" style="background:#f97316"></span>
-                Lahan ({{ $statistik['total_lahan'] }})
+                Koordinat Lahan ({{ $statistik['total_koordinat'] }})
             </label>
             <label>
                 <input type="checkbox" checked onchange="admToggleLayer('pengepul',this.checked)">
@@ -93,7 +98,7 @@ var _admDeviceGeo   = @json($deviceGeo->values()->all());
 
     if (window._admMap) { try { window._admMap.remove(); } catch(e) {} window._admMap = null; }
 
-    var layers = { lahan: L.layerGroup(), pengepul: L.layerGroup(), iot: L.layerGroup() };
+    var layers = { persil: L.layerGroup(), koordinat: L.layerGroup(), pengepul: L.layerGroup(), iot: L.layerGroup() };
     var map    = L.map(el, {zoomControl:true}).setView([-7.281166, 109.286804], 11);
     window._admMap        = map;
     window.admToggleLayer = function(n,s){ s ? layers[n].addTo(map) : map.removeLayer(layers[n]); };
@@ -101,13 +106,14 @@ var _admDeviceGeo   = @json($deviceGeo->values()->all());
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution:'&copy; OpenStreetMap contributors', maxZoom:19
     }).addTo(map);
-    layers.lahan.addTo(map); layers.pengepul.addTo(map); layers.iot.addTo(map);
+    layers.persil.addTo(map); layers.koordinat.addTo(map); layers.pengepul.addTo(map); layers.iot.addTo(map);
 
     var bounds = [];
 
     (_admLahanGeo||[]).forEach(function(lahan) {
         if (!lahan.geom) return;
         var pop = '<b>'+(lahan.kode||'?')+'</b><br>Penderes: '+lahan.petani+'<br>Pemilik: '+lahan.pemilik;
+        var isPolygon = lahan.isPolygon;
         function addG(g) {
             if (!g||!g.type) return;
             if (g.type==='FeatureCollection') { (g.features||[]).forEach(function(f){addG(f.geometry||f);}); }
@@ -115,16 +121,16 @@ var _admDeviceGeo   = @json($deviceGeo->values()->all());
             else if (g.type==='GeometryCollection') { (g.geometries||[]).forEach(addG); }
             else if (g.type==='Point') {
                 var lat=g.coordinates[1],lng=g.coordinates[0];
-                layers.lahan.addLayer(L.circleMarker([lat,lng],{radius:5,color:'#ea580c',fillColor:'#f97316',fillOpacity:.8,weight:1}).bindPopup(pop));
+                layers.koordinat.addLayer(L.circleMarker([lat,lng],{radius:5,color:'#ea580c',fillColor:'#f97316',fillOpacity:.8,weight:1}).bindPopup(pop));
                 bounds.push([lat,lng]);
             } else if (g.type==='Polygon') {
                 var c=g.coordinates[0].map(function(x){return[x[1],x[0]];});
-                layers.lahan.addLayer(L.polygon(c,{color:'#ea580c',fillColor:'#f97316',fillOpacity:.4,weight:2}).bindPopup(pop));
+                layers.persil.addLayer(L.polygon(c,{color:'#1d4ed8',fillColor:'#93c5fd',fillOpacity:.4,weight:1.5}).bindPopup(pop));
                 c.forEach(function(x){bounds.push(x);});
             } else if (g.type==='MultiPolygon') {
                 g.coordinates.forEach(function(p){
                     var c=p[0].map(function(x){return[x[1],x[0]];});
-                    layers.lahan.addLayer(L.polygon(c,{color:'#ea580c',fillColor:'#f97316',fillOpacity:.4,weight:2}).bindPopup(pop));
+                    layers.persil.addLayer(L.polygon(c,{color:'#1d4ed8',fillColor:'#93c5fd',fillOpacity:.4,weight:1.5}).bindPopup(pop));
                     c.forEach(function(x){bounds.push(x);});
                 });
             }
