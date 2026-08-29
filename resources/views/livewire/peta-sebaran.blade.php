@@ -242,7 +242,7 @@
                 + `<br>{{ $lahan->pohon_di_deres }} pohon kelapa`;
 
             L.geoJSON(geom, {
-                style: { color: '#ea580c', fillColor: '#f97316', fillOpacity: 0.35, weight: 2 },
+                style: { color: '#1d4ed8', fillColor: '#93c5fd', fillOpacity: 0.45, weight: 1.5 },
                 pointToLayer: (f, latlng) => L.marker(latlng, { icon: lahanIcon() }),
                 onEachFeature: (f, layer) => {
                     layer.bindPopup(popup);
