@@ -67,6 +67,7 @@ class BatasWilayahImportService
                 Shapefile::OPTION_FORCE_MULTIPART_GEOMETRIES   => false,
                 Shapefile::OPTION_SUPPRESS_M                   => true,
                 Shapefile::OPTION_SUPPRESS_Z                   => true,
+                Shapefile::OPTION_DBF_CONVERT_TO_UTF8          => false,
             ]);
         } catch (\Throwable $e) {
             $result['errors'][] = 'Gagal membuka SHP: ' . $e->getMessage();
