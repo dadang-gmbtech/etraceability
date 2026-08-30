@@ -77,6 +77,16 @@
                 <span class="adm-dot" style="background:#2563eb"></span>
                 Perangkat IoT ({{ $statistik['total_device'] }})
             </label>
+            <label>
+                <input type="checkbox" onchange="admToggleLayer('kecamatan',this.checked)">
+                <span class="adm-dot" style="background:none;border:2px solid #1d4ed8;"></span>
+                Kecamatan ({{ $kecamatans->count() }})
+            </label>
+            <label>
+                <input type="checkbox" onchange="admToggleLayer('desa',this.checked)">
+                <span class="adm-dot" style="background:none;border:2px dashed #7c3aed;"></span>
+                Desa ({{ $desas->count() }})
+            </label>
         </div>
 
         <div wire:ignore>
@@ -91,6 +101,8 @@
 var _admLahanGeo    = @json($lahanGeo->values()->all());
 var _admPengepulGeo = @json($pengepulGeo->values()->all());
 var _admDeviceGeo   = @json($deviceGeo->values()->all());
+var _admKecamatans  = @json($kecamatans->map(fn($k) => ['nama' => $k->nama, 'geom' => $k->koordinat])->values()->all());
+var _admDesas       = @json($desas->map(fn($d) => ['nama' => $d->nama, 'geom' => $d->koordinat])->values()->all());
 
 (function admInitMap() {
     var el = document.getElementById('adm-map-sebaran');
@@ -98,7 +110,7 @@ var _admDeviceGeo   = @json($deviceGeo->values()->all());
 
     if (window._admMap) { try { window._admMap.remove(); } catch(e) {} window._admMap = null; }
 
-    var layers = { persil: L.layerGroup(), koordinat: L.layerGroup(), pengepul: L.layerGroup(), iot: L.layerGroup() };
+    var layers = { persil: L.layerGroup(), koordinat: L.layerGroup(), pengepul: L.layerGroup(), iot: L.layerGroup(), kecamatan: L.layerGroup(), desa: L.layerGroup() };
     var map    = L.map(el, {zoomControl:true}).setView([-7.281166, 109.286804], 11);
     window._admMap        = map;
     window.admToggleLayer = function(n,s){ s ? layers[n].addTo(map) : map.removeLayer(layers[n]); };
@@ -151,6 +163,20 @@ var _admDeviceGeo   = @json($deviceGeo->values()->all());
             html:'<div style="width:14px;height:14px;border-radius:50%;background:'+c+';border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>'});
         layers.iot.addLayer(L.marker([d.lat,d.lng],{icon:ic}).bindPopup('<b>'+d.name+'</b><br>Lahan: '+d.lahan));
         bounds.push([d.lat,d.lng]);
+    });
+
+    (_admKecamatans||[]).forEach(function(k) {
+        if (!k.geom) return;
+        L.geoJSON(k.geom, {
+            style: {color:'#1d4ed8',fillColor:'#3b82f6',fillOpacity:.05,weight:2}
+        }).bindPopup('<b>Kecamatan: '+k.nama+'</b>').addTo(layers.kecamatan);
+    });
+
+    (_admDesas||[]).forEach(function(d) {
+        if (!d.geom) return;
+        L.geoJSON(d.geom, {
+            style: {color:'#7c3aed',fillColor:'#8b5cf6',fillOpacity:.05,weight:1.5,dashArray:'5,4'}
+        }).bindPopup('<b>Desa: '+d.nama+'</b>').addTo(layers.desa);
     });
 
     if (bounds.length) { try { map.fitBounds(bounds,{padding:[30,30],maxZoom:16}); } catch(e){} }

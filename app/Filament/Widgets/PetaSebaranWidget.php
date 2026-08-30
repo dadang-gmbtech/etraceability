@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\BatchProduksi;
+use App\Models\BatasWilayah;
 use App\Models\Device;
 use App\Models\Lahan;
 use App\Models\Petani;
@@ -75,11 +76,16 @@ class PetaSebaranWidget extends Widget
             $totalPengepul = Pengepul::count();
         } catch (\Throwable $e) {}
 
+        $kecamatans = BatasWilayah::where('jenis', 'kecamatan')->get(['id', 'nama', 'koordinat']);
+        $desas      = BatasWilayah::where('jenis', 'desa')->get(['id', 'nama', 'koordinat']);
+
         return [
             'lahans'      => $lahans,
             'lahanGeo'    => $lahanGeo,
             'pengepulGeo' => $pengepulGeo,
             'deviceGeo'   => $deviceGeo,
+            'kecamatans'  => $kecamatans,
+            'desas'       => $desas,
             'statistik'   => [
                 'total_petani'   => Petani::where('aktif', true)->count(),
                 'total_lahan'    => $lahans->count(),
