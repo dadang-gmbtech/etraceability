@@ -9,8 +9,6 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Tables\Actions\BulkAction;
-use Illuminate\Database\Eloquent\Collection;
 
 class ListBatasWilayahs extends ListRecords
 {
@@ -74,6 +72,34 @@ class ListBatasWilayahs extends ListRecords
                     }
                 }),
 
+            // ── Hapus Kecamatan ───────────────────────────────────────────
+            Action::make('hapusSemuaKecamatan')
+                ->label('Hapus Semua Kecamatan')
+                ->color('danger')
+                ->icon('heroicon-o-trash')
+                ->requiresConfirmation()
+                ->modalHeading('Hapus Semua Batas Kecamatan?')
+                ->modalDescription('Tindakan ini akan menghapus semua data batas kecamatan. Tidak dapat dibatalkan.')
+                ->action(function (): void {
+                    $count = BatasWilayah::where('jenis', 'kecamatan')->count();
+                    BatasWilayah::where('jenis', 'kecamatan')->delete();
+                    Notification::make()->title("$count batas kecamatan dihapus.")->success()->send();
+                }),
+
+            // ── Hapus Desa ────────────────────────────────────────────────
+            Action::make('hapusSemuaDesa')
+                ->label('Hapus Semua Desa')
+                ->color('danger')
+                ->icon('heroicon-o-trash')
+                ->requiresConfirmation()
+                ->modalHeading('Hapus Semua Batas Desa?')
+                ->modalDescription('Tindakan ini akan menghapus semua data batas desa. Tidak dapat dibatalkan.')
+                ->action(function (): void {
+                    $count = BatasWilayah::where('jenis', 'desa')->count();
+                    BatasWilayah::where('jenis', 'desa')->delete();
+                    Notification::make()->title("$count batas desa dihapus.")->success()->send();
+                }),
+
             // ── Import Desa ───────────────────────────────────────────────
             Action::make('importDesa')
                 ->label('Import Desa')
@@ -131,40 +157,4 @@ class ListBatasWilayahs extends ListRecords
         ];
     }
 
-    protected function getTableBulkActions(): array
-    {
-        return [
-            BulkAction::make('hapusSemuaKecamatan')
-                ->label('Hapus Semua Kecamatan')
-                ->color('danger')
-                ->icon('heroicon-o-trash')
-                ->requiresConfirmation()
-                ->modalHeading('Hapus Semua Batas Kecamatan?')
-                ->modalDescription('Tindakan ini akan menghapus semua data batas kecamatan. Tidak dapat dibatalkan.')
-                ->deselectRecordsAfterCompletion()
-                ->action(function (): void {
-                    BatasWilayah::where('jenis', 'kecamatan')->delete();
-                    Notification::make()
-                        ->title('Semua batas kecamatan dihapus.')
-                        ->success()
-                        ->send();
-                }),
-
-            BulkAction::make('hapusSemuaDesa')
-                ->label('Hapus Semua Desa')
-                ->color('danger')
-                ->icon('heroicon-o-trash')
-                ->requiresConfirmation()
-                ->modalHeading('Hapus Semua Batas Desa?')
-                ->modalDescription('Tindakan ini akan menghapus semua data batas desa. Tidak dapat dibatalkan.')
-                ->deselectRecordsAfterCompletion()
-                ->action(function (): void {
-                    BatasWilayah::where('jenis', 'desa')->delete();
-                    Notification::make()
-                        ->title('Semua batas desa dihapus.')
-                        ->success()
-                        ->send();
-                }),
-        ];
-    }
 }
