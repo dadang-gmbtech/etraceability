@@ -74,9 +74,19 @@ class BatasWilayahImportService
             return;
         }
 
-        foreach ($reader as $record) {
+        $reader->rewind();
+        while ($reader->valid()) {
+            try {
+                $record = $reader->current();
+            } catch (\Throwable $e) {
+                $result['skipped']++;
+                try { $reader->next(); } catch (\Throwable $e2) { break; }
+                continue;
+            }
+
             if ($record->isEmpty()) {
                 $result['skipped']++;
+                try { $reader->next(); } catch (\Throwable $e) { break; }
                 continue;
             }
 
@@ -107,6 +117,7 @@ class BatasWilayahImportService
 
                 if (BatasWilayah::where('jenis', $jenis)->where('nama', $nama)->exists()) {
                     $result['skipped']++;
+                    try { $reader->next(); } catch (\Throwable $e) { break; }
                     continue;
                 }
 
@@ -123,6 +134,8 @@ class BatasWilayahImportService
                 $result['errors'][] = 'Record gagal: ' . $e->getMessage();
                 $result['skipped']++;
             }
+
+            try { $reader->next(); } catch (\Throwable $e) { break; }
         }
     }
 

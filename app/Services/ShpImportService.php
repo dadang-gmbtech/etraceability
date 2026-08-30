@@ -77,9 +77,19 @@ class ShpImportService
             return;
         }
 
-        foreach ($reader as $record) {
+        $reader->rewind();
+        while ($reader->valid()) {
+            try {
+                $record = $reader->current();
+            } catch (\Throwable $e) {
+                $result['skipped']++;
+                try { $reader->next(); } catch (\Throwable $e2) { break; }
+                continue;
+            }
+
             if ($record->isEmpty()) {
                 $result['skipped']++;
+                try { $reader->next(); } catch (\Throwable $e) { break; }
                 continue;
             }
 
@@ -90,6 +100,7 @@ class ShpImportService
                 if (! $this->isWgs84($geojson)) {
                     $result['errors'][] = 'Koordinat bukan WGS84 (derajat). Harap konversi ke sistem koordinat WGS84 sebelum import.';
                     $result['skipped']++;
+                    try { $reader->next(); } catch (\Throwable $e) { break; }
                     continue;
                 }
 
@@ -144,6 +155,8 @@ class ShpImportService
                     $result['errors'][] = 'Record gagal: ' . $e->getMessage();
                     $result['skipped']++;
                 }
+
+            try { $reader->next(); } catch (\Throwable $e) { break; }
         }
     }
 
