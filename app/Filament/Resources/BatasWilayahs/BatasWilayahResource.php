@@ -6,6 +6,8 @@ use App\Filament\Resources\BatasWilayahs\Pages\ListBatasWilayahs;
 use App\Models\BatasWilayah;
 use BackedEnum;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -50,7 +52,13 @@ class BatasWilayahResource extends Resource
                     ->sortable(),
             ])
             ->defaultSort('jenis')
-            ->striped();
+            ->striped()
+            ->actions([
+                DeleteAction::make(),
+            ])
+            ->bulkActions([
+                DeleteBulkAction::make(),
+            ]);
     }
 
     public static function getPages(): array
